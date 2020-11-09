@@ -8,19 +8,10 @@ export default class Service
 	}
 
 	registerProperty(name, property) {
-		this.properties.push({
-			propertyName: name,
-			propertyValue: property
-		});
+		this.properties[name] = property;
 	}
 
 	getProperty(name) {
-		for (let p of this.properties) {
-			if (p.propertyName == name) {
-				return p.propertyValue;
-			}
-		}
-
-		return null;
+		return this.properties[name];
 	}
 }

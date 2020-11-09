@@ -2,8 +2,9 @@ import Property from './Property.js';
 
 export default class Component
 {
-	constructor() {
+	constructor(enabled) {
 		this.children = [];
+		this.enabled = (enabled === null || enabled === undefined || enabled === true);
 		this.reload();
 	}
 
@@ -17,21 +18,35 @@ export default class Component
 	}
 
 	reload() {
-		const result = document.querySelectorAll(this.selector);
-		
-		const attrComponent = (el) => {
-			el.component = this;
+		if (this.enabled) {
+			const result = document.querySelectorAll(this.selector);
+			
+			const attrComponent = (el) => {
+				el.component = this;
 
-			for (let child of el.childNodes) {
-				attrComponent(child);
+				for (let child of el.childNodes) {
+					attrComponent(child);
+				}
 			}
-		}
 
-		for (let el of result) {
-			el.innerHTML = this.render();
-			attrComponent(el);
+			for (let el of result) {
+				el.innerHTML = this.render();
+				attrComponent(el);
+			}
+			this.loadChildren();
 		}
-		this.loadChildren();
+	}
+
+	enable() {
+		this.enabled = true;
+		this.reload();
+	}
+
+	disable() {
+		this.enabled = false;
+		for (let el of document.querySelectorAll(this.selector)) {
+			el.innerHTML = '';
+		}
 	}
 
 	property(value) {
@@ -51,5 +66,9 @@ export default class Component
 		for (let child of this.children) {
 			child.reload();
 		}
+	}
+
+	pageTitle(title) {
+		document.querySelector('head title').innerHTML = title;
 	}
 }
