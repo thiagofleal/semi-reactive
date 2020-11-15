@@ -2,27 +2,43 @@ import Component from './Component.js';
 
 export default class Switch extends Component
 {
-	constructor() {
+	constructor(id) {
 		super();
 		this.components = {};
-		this.selected = this.property(null);
+		this.id = id;
+		this.selected = null;
 	}
 
-	register(component, selector) {
+	getElement(selector) {
+		return this.components[selector];
+	}
+
+	setElement(selector, value) {
+		this.components[selector] = value;
+	}
+
+	register(component, selector, handlers) {
 		component.disable();
-		this.components[selector] = component;
+		this.setElement(selector, component);
+		this.appendChild(component, `#${this.id}`, handlers);
 	}
 
 	select(selector) {
-		this.selected.value = this.components[selector];
-		this.selected.value.show(this.selector);
+		if (this.selected) {
+			this.selected.disable();
+		}
+		this.selected = this.components[selector];
+		this.selected.enable();
+	}
+
+	enable() {
+		super.enable();
+		if (this.selected) {
+			this.selected.reload();
+		}
 	}
 
 	render() {
-		if (this.selected.value) {
-			return this.selected.value.render();
-		} else {
-			return '';
-		}
+		return `<div id="${this.id}"></div>`;
 	}
 }
