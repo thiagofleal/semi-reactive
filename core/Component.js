@@ -14,24 +14,28 @@ export default class Component extends EventTarget
 		super();
 		this.children = [];
 		this.enabled = (enabled === null || enabled === undefined || enabled === true);
+		this.dataset = {};
+		this.__first = true;
 	}
 
 	render() {
 		return '';
 	}
 
+	onFirst() {}
+
 	show(selector) {
 		this.selector = selector;
 		this.reload();
 	}
 
-	selectAll() {
+	__selectAll() {
 		return document.querySelectorAll(this.selector);
 	}
 
 	reload() {
 		if (this.enabled) {
-			const result = this.selectAll();
+			const result = this.__selectAll();
 			
 			const attrComponent = (el) => {
 				el.component = this;
@@ -42,11 +46,17 @@ export default class Component extends EventTarget
 			}
 
 			for (let el of result) {
+				this.dataset = el.dataset;
 				el.innerHTML = this.render();
 				attrComponent(el);
 			}
-			this.loadChildren();
+			this.__loadChildren();
 			this.dispatchComponentEvent('reload');
+
+			if (this.__first) {
+				this.onFirst();
+				this.__first = false;
+			}
 		}
 		return this.enabled;
 	}
@@ -59,7 +69,7 @@ export default class Component extends EventTarget
 
 	disable() {
 		this.enabled = false;
-		for (let el of this.selectAll()) {
+		for (let el of this.__selectAll()) {
 			el.innerHTML = '';
 		}
 		this.dispatchComponentEvent('disable');
@@ -85,7 +95,7 @@ export default class Component extends EventTarget
 		}
 	}
 
-	loadChildren() {
+	__loadChildren() {
 		for (let child of this.children) {
 			child.reload();
 		}
@@ -93,6 +103,10 @@ export default class Component extends EventTarget
 
 	pageTitle(title) {
 		document.querySelector('head title').innerHTML = title;
+	}
+
+	dispatchComponentEvent(eventName, listener) {
+		super.addEventListener('component.' + eventName, listener);
 	}
 
 	dispatchComponentEvent(eventName) {

@@ -2,43 +2,55 @@ import Component from './Component.js';
 
 export default class Switch extends Component
 {
-	constructor(id) {
+	constructor() {
 		super();
 		this.components = {};
-		this.id = id;
-		this.selected = null;
 	}
 
-	getElement(selector) {
-		return this.components[selector];
+	setComponent(key, component) {
+		this.components[key] = {
+			component: component,
+			selected: false
+		};
 	}
 
-	setElement(selector, value) {
-		this.components[selector] = value;
-	}
-
-	register(component, selector, handlers) {
-		component.disable();
-		this.setElement(selector, component);
-		this.appendChild(component, `#${this.id}`, handlers);
-	}
-
-	select(selector) {
-		if (this.selected) {
-			this.selected.disable();
+	getComponent(key) {
+		if (key in this.components) {
+			return this.components[key].component;
 		}
-		this.selected = this.components[selector];
-		this.selected.enable();
+		return null;
 	}
 
-	enable() {
-		super.enable();
-		if (this.selected) {
-			this.selected.reload();
+	getSelected() {
+		for (const key in this.components) {
+			if (this.components[key].selected) {
+				return this.components[key].component;
+			}
+		}
+		return null;
+	}
+
+	select(key) {
+		for (const key in this.components) {
+			this.components[key].selected = false;
+		}
+
+		if (key in this.components) {
+			this.components[key].selected = true;
+			this.components[key].component.show(`#${this.dataset.id}`);
+		}
+	}
+
+	reload() {
+		super.reload();
+		const selected = this.getSelected();
+
+		if (selected) {
+			selected.reload();
 		}
 	}
 
 	render() {
-		return `<div id="${this.id}"></div>`;
+		return `<div id="${this.dataset.id}"></div>`;
 	}
 }

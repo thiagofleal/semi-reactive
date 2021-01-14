@@ -2,8 +2,9 @@ export default class Service
 {
 	constructor(properties) {
 		if (properties === null || properties === undefined) {
-			properties = [];
+			properties = {};
 		}
+		this.functions = {};
 		this.properties = properties;
 	}
 
@@ -13,5 +14,16 @@ export default class Service
 
 	getProperty(name) {
 		return this.properties[name];
+	}
+
+	registerFunction(name, func) {
+		this.function[name] = func;
+	}
+
+	getFunction(name) {
+		if (name in this.function) {
+			return this.function[name];
+		}
+		return () => {};
 	}
 }
