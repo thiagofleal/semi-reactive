@@ -45,16 +45,20 @@ export default class Component extends EventTarget
 				}
 			}
 
-			for (let el of result) {
-				this.dataset = el.dataset;
-				el.innerHTML = this.render();
-				attrComponent(el);
+			for (let item of result) {
+				this.dataset = item.dataset;
+				item.innerHTML = this.render();
+				attrComponent(item);
 			}
 			this.__loadChildren();
 			this.dispatchComponentEvent('reload');
 
 			if (this.__first) {
-				this.onFirst();
+				for (let item of result) {
+					this.dataset = item.dataset;
+					attrComponent(item);
+					this.onFirst(item);
+				}
 				this.__first = false;
 			}
 		}
