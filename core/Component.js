@@ -1,13 +1,5 @@
 import Property from './Property.js';
 
-class ComponentEvent extends Event
-{
-	constructor(eventName, component) {
-		super('component.' + eventName);
-		this.component = component;
-	}
-}
-
 export default class Component extends EventTarget
 {
 	constructor(enabled) {
@@ -37,10 +29,10 @@ export default class Component extends EventTarget
 		if (this.enabled) {
 			const result = this.__selectAll();
 			
-			const attrComponent = (el) => {
-				el.component = this;
+			const attrComponent = (elem) => {
+				elem.component = this;
 
-				for (let child of el.childNodes) {
+				for (let child of elem.childNodes) {
 					attrComponent(child);
 				}
 			}
@@ -56,7 +48,6 @@ export default class Component extends EventTarget
 			if (this.__first) {
 				for (let item of result) {
 					this.dataset = item.dataset;
-					attrComponent(item);
 					this.onFirst(item);
 				}
 				this.__first = false;
@@ -109,11 +100,13 @@ export default class Component extends EventTarget
 		document.querySelector('head title').innerHTML = title;
 	}
 
-	dispatchComponentEvent(eventName, listener) {
-		super.addEventListener('component.' + eventName, listener);
+	addComponentEventListener(eventName, listener) {
+		this.addEventListener('component.' + eventName, listener);
 	}
 
 	dispatchComponentEvent(eventName) {
-		super.dispatchEvent(new ComponentEvent(eventName, this));
+		const event = new Event('component.' + eventName);
+		event.component = this;
+		this.dispatchEvent(event);
 	}
 }
