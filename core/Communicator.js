@@ -1,4 +1,4 @@
-export default class Service
+export default class Communicator
 {
 	constructor(properties) {
 		if (properties === null || properties === undefined) {
@@ -17,13 +17,13 @@ export default class Service
 	}
 
 	registerFunction(name, func) {
-		this.function[name] = func;
+		this.functions[name] = func;
 	}
 
 	getFunction(name) {
-		if (name in this.function) {
-			return this.function[name];
+		if (name in this.functions) {
+			return this.functions[name];
 		}
-		return () => {};
+		return () => null;
 	}
 }
