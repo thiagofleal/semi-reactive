@@ -111,12 +111,12 @@ export class TableComponent extends Component
 				<tbody class="tbody">
 					${
 						data.map(
-							row => `
-								<tr class="${tr_classes}" ${tr(row)}>
+							(row, index) => `
+								<tr class="${tr_classes}" ${tr(row, index)}>
 									${
 										fields.map(
 											(field, key) => `
-												<td style="width: ${columns[key].width}" class="${td_classes}" ${td(field, row[field])}>
+												<td style="width: ${columns[key].width}" class="${td_classes}" ${td(field, key, row[field])}>
 													${
 														(field in format)
 															? format[field](row[field])
@@ -154,23 +154,7 @@ export class TableComponent extends Component
 			"info": true,
 			"scrollY": this.scrollY,
 			"scrollCollapse": true,
-			"language": {
-				"lengthMenu": "Registros por pagina: _MENU_",
-				"zeroRecords": "Nenhum registro encontrado",
-				"info": "Pagina _PAGE_ de _PAGES_",
-				"infoEmpty": "Não há registros disponíveis",
-				"infoFiltered": "(_TOTAL_ resultados encontrados)",
-				"search": "Procurar: ",
-				"loadingRecords": "Carregando...",
-				"processing": "Processando...",
-				"paginate": {
-					"first": "Primeiro",
-					"last": "Último",
-					"next": "Próximo",
-					"previous": "Anterior"
-				}
-			},
-			"fnDrawCallback": function(oSettings) {
+			"fnDrawCallback": oSettings => {
 				$(oSettings.nTableWrapper).find('.pagination li:not(.active) *').addClass('text-info');
 				$(oSettings.nTableWrapper).find('.pagination li.active *').addClass('bg-info');
 				if (oSettings._iDisplayLength >= oSettings.fnRecordsDisplay()) {
@@ -179,7 +163,7 @@ export class TableComponent extends Component
 					$(oSettings.nTableWrapper).find('.dataTables_paginate').show();
 				}
 			},
-			"fnInitComplete": function () {
+			"fnInitComplete": () => {
 				$(this.tableSelector).show();
 			}
 		};
@@ -212,7 +196,7 @@ export class TableComponent extends Component
 
 export class ModalComponent extends Component
 {
-	constructor(callback, id, classes) {
+	constructor(id, callback, classes) {
 		super();
 		this.disable();
 		this.onOpen = this.onClose = () => null;
@@ -257,7 +241,7 @@ export class ModalComponent extends Component
 	render() {
 		return `
 			<div class="modal fade custom-size" id="${this.args.id}" tabindex="-1" role="dialog" aria-hidden="true">
-				<div class="modal-dialog ${this.args.classes}" role="document">
+				<div class="modal-dialog ${this.args.classes || ''}" role="document">
 					<div class="modal-content"></div>
 				</div>
 			</div>
