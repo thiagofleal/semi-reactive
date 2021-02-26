@@ -196,16 +196,17 @@ export class TableComponent extends Component
 
 export class ModalComponent extends Component
 {
-	constructor(id, callback, classes) {
+	constructor(contentClass) {
 		super();
 		this.disable();
 		this.onOpen = this.onClose = () => null;
-		this.args = {
-			id, classes
-		}
+		this.content = new contentClass(this);
+	}
+
+	onFirst() {
 		this.appendChild(
-			callback(this),
-			`#${this.args.id} .modal-content`
+			this.content,
+			`#${this.dataset.id || 'modal'} .modal-content`
 		);
 	}
 
@@ -217,6 +218,10 @@ export class ModalComponent extends Component
 		this.onClose = callback;
 	}
 
+	register(name, callback) {
+		this[name] = callback;
+	}
+
 	open() {
 		const options = {
 			backdrop: 'static',
@@ -224,13 +229,13 @@ export class ModalComponent extends Component
 			focus: true
 		};
 		this.enable();
-		const modalSelect = $(`#${this.args.id}`);
+		const modalSelect = $(`#${this.dataset.id || 'modal'}`);
 		modalSelect.modal(options);
 		modalSelect.on('shown.bs.modal', () => this.onOpen());
 	}
 
 	close() {
-		const modalSelect = $(`#${this.args.id}`);
+		const modalSelect = $(`#${this.dataset.id || 'modal'}`);
 		modalSelect.modal('hide');
 		modalSelect.on('hidden.bs.modal', () => {
 			this.disable();
@@ -240,8 +245,8 @@ export class ModalComponent extends Component
 
 	render() {
 		return `
-			<div class="modal fade custom-size" id="${this.args.id}" tabindex="-1" role="dialog" aria-hidden="true">
-				<div class="modal-dialog ${this.args.classes || ''}" role="document">
+			<div class="modal fade custom-size" id="${this.dataset.id || 'modal'}" tabindex="-1" role="dialog" aria-hidden="true">
+				<div class="modal-dialog ${this.dataset.classes || ''}" role="document">
 					<div class="modal-content"></div>
 				</div>
 			</div>
