@@ -206,7 +206,7 @@ export class ModalComponent extends Component
 	onFirst() {
 		this.appendChild(
 			this.content,
-			`#${this.dataset.id || 'modal'} .modal-content`
+			`${this.selector} .modal .modal-content`
 		);
 	}
 
@@ -229,13 +229,13 @@ export class ModalComponent extends Component
 			focus: true
 		};
 		this.enable();
-		const modalSelect = $(`#${this.dataset.id || 'modal'}`);
+		const modalSelect = $(`${this.selector} .modal`);
 		modalSelect.modal(options);
 		modalSelect.on('shown.bs.modal', () => this.onOpen());
 	}
 
 	close() {
-		const modalSelect = $(`#${this.dataset.id || 'modal'}`);
+		const modalSelect = $(`${this.selector} .modal`);
 		modalSelect.modal('hide');
 		modalSelect.on('hidden.bs.modal', () => {
 			this.disable();
@@ -245,7 +245,7 @@ export class ModalComponent extends Component
 
 	render() {
 		return `
-			<div class="modal fade custom-size" id="${this.dataset.id || 'modal'}" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal fade custom-size" .modal" tabindex="-1" role="dialog" aria-hidden="true">
 				<div class="modal-dialog ${this.dataset.classes || ''}" role="document">
 					<div class="modal-content"></div>
 				</div>
