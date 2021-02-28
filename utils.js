@@ -1,5 +1,8 @@
-import { Component } from './core.js';
+import "./pluggins/jquery.min.js";
+import "./pluggins/bootstrap.min.js";
 import "./pluggins/datatables.min.js";
+
+import { Component } from './core.js';
 
 export class TableComponent extends Component
 {
@@ -189,18 +192,17 @@ export class TableComponent extends Component
 			$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
 			   $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
 			});
-			$('table').css("visibility", "visible");
 		});
 	}
 }
 
 export class ModalComponent extends Component
 {
-	constructor(contentClass) {
+	constructor(contentClass, ...args) {
 		super();
 		this.disable();
 		this.onOpen = this.onClose = () => null;
-		this.content = new contentClass(this);
+		this.content = new contentClass(this, ...args);
 	}
 
 	onFirst() {
