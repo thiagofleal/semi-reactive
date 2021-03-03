@@ -231,13 +231,13 @@ export class ModalComponent extends Component
 			focus: true
 		};
 		this.enable();
-		const modalSelect = $(`${this.selector} .modal`);
+		const modalSelect = $(`${this.selector}>.modal`);
 		modalSelect.modal(options);
 		modalSelect.on('shown.bs.modal', () => this.onOpen());
 	}
 
 	close() {
-		const modalSelect = $(`${this.selector} .modal`);
+		const modalSelect = $(`${this.selector}>.modal`);
 		modalSelect.modal('hide');
 		modalSelect.on('hidden.bs.modal', () => {
 			this.disable();
