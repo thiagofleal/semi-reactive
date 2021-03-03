@@ -208,7 +208,7 @@ export class ModalComponent extends Component
 	onFirst() {
 		this.appendChild(
 			this.content,
-			`${this.selector} .modal .modal-content`
+			`${this.selector}>.modal>.modal-dialog>.modal-content`
 		);
 	}
 

@@ -211,7 +211,7 @@ export class Switch extends Component
 
 		if (key in this.components) {
 			this.components[key].selected = true;
-			this.components[key].component.show(`#${this.dataset.id}`);
+			this.components[key].component.show(`${this.selector}>.switch-component`);
 		}
 	}
 
@@ -225,7 +225,7 @@ export class Switch extends Component
 	}
 
 	render() {
-		return `<div id="${this.dataset.id}"></div>`;
+		return `<div class="switch-component"></div>`;
 	}
 }
 
