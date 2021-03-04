@@ -40,7 +40,7 @@ export class Component extends EventTarget
 		this.children = [];
 		this.enabled = (enabled === null || enabled === undefined || enabled === true);
 		this.dataset = {};
-		this.setState(props || {});
+		this.definePropertiesObject(props || {});
 		this.__first = true;
 	}
 
@@ -117,7 +117,7 @@ export class Component extends EventTarget
 		});
 	}
 
-	setState(obj) {
+	definePropertiesObject(obj) {
 		for (const key in obj) {
 			this.defineProperty(key, obj[key]);
 		}
