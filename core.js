@@ -35,11 +35,12 @@ export class Property
 
 export class Component extends EventTarget
 {
-	constructor(enabled) {
+	constructor(props, enabled) {
 		super();
 		this.children = [];
 		this.enabled = (enabled === null || enabled === undefined || enabled === true);
 		this.dataset = {};
+		this.setState(props || {});
 		this.__first = true;
 	}
 
@@ -105,6 +106,21 @@ export class Component extends EventTarget
 
 	property(value) {
 		return new Property(value, this);
+	}
+
+	defineProperty(name, initial) {
+		const prop = this.property(initial);
+		
+		Object.defineProperty(this, name, {
+			get: () => prop.value,
+			set: value => prop.value = value
+		});
+	}
+
+	setState(obj) {
+		for (const key in obj) {
+			this.defineProperty(key, obj[key]);
+		}
 	}
 
 	associateProperty(property) {
@@ -176,8 +192,8 @@ export class Communicator
 
 export class Switch extends Component
 {
-	constructor() {
-		super();
+	constructor(props) {
+		super(props);
 		this.components = {};
 	}
 
@@ -231,17 +247,19 @@ export class Switch extends Component
 
 export class TextComponent extends Component
 {
-	constructor(text) {
-		super();
-
+	constructor(text, props) {
+		if (props === undefined || props === null) {
+			props = {};
+		}
 		if (text === undefined || text === null) {
 			text = "";
 		}
 
-		this.text = this.property(text);
+		props.text = text;
+		super(props);
 	}
 
 	render() {
-		return `${this.dataset.text || this.text.value}`;
+		return `${this.dataset.text || this.text}`;
 	}
 }

@@ -6,8 +6,8 @@ import { Component } from './core.js';
 
 export class TableComponent extends Component
 {
-	constructor(tableSelector) {
-		super();
+	constructor(tableSelector, props) {
+		super(props);
 		this.scrollY = '50vh';
 
 		if (tableSelector === undefined || tableSelector === null) {
