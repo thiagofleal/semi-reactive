@@ -25,8 +25,10 @@ export class ModalComponent extends Component
 		this.onClose = callback;
 	}
 
-	register(name, callback) {
-		this[name] = callback;
+	register(object) {
+		for (const key in object) {
+			this[key] = object[key];
+		}
 	}
 
 	open() {
