@@ -7,16 +7,14 @@ export class ModalComponent extends Component
 {
 	constructor(contentClass, ...args) {
 		super();
-		this.disable();
 		this.onOpen = this.onClose = () => null;
-		this.content = new contentClass(this, ...args);
-	}
-
-	onFirst() {
-		this.appendChild(
-			this.content,
-			`${this.selector}>.modal>.modal-dialog>.modal-content`
-		);
+		
+		this.addComponentEventListener("show", () => {
+			this.appendChild(
+				new contentClass(this, ...args),
+				`${this.selector}>.modal>.modal-dialog>.modal-content`
+			)
+		});
 	}
 
 	setOnOpen(callback) {
@@ -37,7 +35,6 @@ export class ModalComponent extends Component
 			keyboard: false,
 			focus: true
 		};
-		this.enable();
 		const modalSelect = $(`${this.selector}>.modal`);
 		modalSelect.modal(options);
 		modalSelect.on('shown.bs.modal', () => this.onOpen());
@@ -47,7 +44,6 @@ export class ModalComponent extends Component
 		const modalSelect = $(`${this.selector}>.modal`);
 		modalSelect.modal('hide');
 		modalSelect.on('hidden.bs.modal', () => {
-			this.disable();
 			this.onClose();
 		});
 	}

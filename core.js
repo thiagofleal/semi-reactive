@@ -53,6 +53,7 @@ export class Component extends EventTarget
 	show(selector) {
 		this.selector = selector;
 		this.reload();
+		this.dispatchComponentEvent("show");
 	}
 
 	__selectAll() {
