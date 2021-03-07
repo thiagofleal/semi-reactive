@@ -194,3 +194,74 @@ export class TableComponent extends Component
 		});
 	}
 }
+
+export class FormComponent extends Component
+{
+	constructor(props) {
+		super(props);
+	}
+
+	addFieldControl(name, value) {
+		Object.defineProperty(this.controlNames, name, value);
+	}
+
+	setFieldsControls(controls) {
+		this.controlNames = {};
+		for (const key in controls) {
+			this.addFieldControl(key, controls[key]);
+		}
+	}
+
+	__onInput(event, target) {
+		this.controlNames[target] = event.target.value;
+		event.target.value = this.controlNames[target]
+	}
+
+	__renderAttributes(attributes) {
+		return attributes.map(
+			attr => {
+				return `${attr.name}="${
+					Array.isArray(attr)
+						?	attr.join(' ')
+						:	attr.value
+				}"`;
+			}
+		).join(' ');
+	}
+
+	input(options) {
+		const attributes = [];
+
+		const defaultOptions = {
+			type: 'text',
+			fieldControlName: '',
+			events: ['onkeyup', 'onchange'],
+			value: this.controlNames[options.fieldControlName]
+		};
+
+		for (const key in defaultOptions) {
+			if (options[key] === undefined) {
+				options[key] = defaultOptions[key];
+			}
+		}
+
+		for (const key in options) {
+			attributes.push({
+				name: key,
+				value: options[key]
+			});
+		}
+
+		for (const event of options.events) {
+			attributes.push({
+				name: event,
+				value: `this.component.__onInput(event, '${options.fieldControlName}')`
+			});
+		}
+
+		delete options.events;
+		delete options.fieldControlName;
+
+		return `<input ${this.__renderAttributes(attributes)}>`;
+	}
+}
