@@ -1,6 +1,3 @@
-import * as jquery from "./pluggins/jquery.min.js";
-import * as bootstrap from "./pluggins/bootstrap.min.js";
-
 import { Component } from './core.js';
 
 export class ModalComponent extends Component
@@ -8,13 +5,19 @@ export class ModalComponent extends Component
 	constructor(contentClass, ...args) {
 		super();
 		this.onOpen = this.onClose = () => null;
-		
-		this.addComponentEventListener("show", () => {
-			this.appendChild(
-				new contentClass(this, ...args),
-				`${this.selector}>.modal>.modal-dialog>.modal-content`
-			)
-		});
+		this.__content = new contentClass(this, ...args);
+	}
+
+	show(selector) {
+		super.show(selector);
+		this.appendChild(
+			this.__content,
+			`${selector}>.modal>.modal-dialog>.modal-content`
+		)
+	}
+
+	getContent() {
+		return this.__content;
 	}
 
 	setOnOpen(callback) {

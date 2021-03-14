@@ -256,11 +256,15 @@ export class TextComponent extends Component
 			text = "";
 		}
 
-		props.text = text;
+		props.text_value = text;
 		super(props);
 	}
 
+	setText(text) {
+		this.text_value = '' + text;
+	}
+
 	render() {
-		return `${this.dataset.text || this.text}`;
+		return this.dataset.text || this.text_value;
 	}
 }

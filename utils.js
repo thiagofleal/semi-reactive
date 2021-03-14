@@ -1,6 +1,3 @@
-import * as jquery from "./pluggins/jquery.min.js";
-import * as datatables from "./pluggins/datatables.min.js";
-
 import { Component } from './core.js';
 
 export class TableComponent extends Component
