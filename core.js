@@ -213,39 +213,39 @@ export class Switch extends Component
 	constructor(props) {
 		super(props);
 		this.components = {};
+		this.selectedKey = null;
+	}
+
+	show(selector) {
+		super.show(selector);
+
+		if (this.selectedKey) {
+			this.select(this.selectedKey);
+		}
 	}
 
 	setComponent(key, component) {
-		this.components[key] = {
-			component: component,
-			selected: false
-		};
+		this.components[key] = component;
 	}
 
 	getComponent(key) {
 		if (key in this.components) {
-			return this.components[key].component;
+			return this.components[key];
 		}
 		return null;
 	}
 
 	getSelected() {
-		for (const key in this.components) {
-			if (this.components[key].selected) {
-				return this.components[key].component;
-			}
+		if (this.selectedKey) {
+			return this.components[this.selectedKey];
 		}
 		return null;
 	}
 
 	select(key) {
-		for (const key in this.components) {
-			this.components[key].selected = false;
-		}
-
 		if (key in this.components) {
-			this.components[key].selected = true;
-			this.components[key].component.show(this.selector);
+			this.selectedKey = key;
+			this.components[key].show(this.selector);
 		}
 	}
 
