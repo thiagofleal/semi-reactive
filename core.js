@@ -33,6 +33,23 @@ export class Property
 	}
 }
 
+export class EventEmmitter
+{
+	constructor() {
+		this.listeners = [];
+	}
+
+	then(callback) {
+		this.listeners.push(callback);
+	}
+
+	emmit(...args) {
+		this.listeners.forEach(
+			listener => listener(...args)
+		);
+	}
+}
+
 export class Component extends EventTarget
 {
 	constructor(props, enabled) {
@@ -228,21 +245,16 @@ export class Switch extends Component
 
 		if (key in this.components) {
 			this.components[key].selected = true;
-			this.components[key].component.show(`${this.selector}>.switch-component`);
+			this.components[key].component.show(this.selector);
 		}
 	}
 
 	reload() {
-		super.reload();
 		const selected = this.getSelected();
 
 		if (selected) {
 			selected.reload();
 		}
-	}
-
-	render() {
-		return `<div class="switch-component"></div>`;
 	}
 }
 
