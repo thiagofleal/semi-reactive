@@ -33,20 +33,36 @@ export class Property
 	}
 }
 
-export class EventEmmitter
+export class EventEmmitter extends EventTarget
 {
-	constructor() {
-		this.listeners = [];
+	constructor(eventName, origin) {
+		super();
+		if (eventName === undefined || eventName === null) {
+			const chars = "abcdefghijklmnopqrstuvwxyz";
+			const length = 10;
+			eventName = '';
+
+			for (let i = 0; i < length; i++) {
+				const i = Math.floor(Math.random() * length);
+				eventName += chars.charAt(i);
+			}
+		}
+
+		if (origin === undefined || origin === null) {
+			origin = this;
+		}
+
+		this.eventName = eventName;
+		this.origin = origin;
+		this.event = new Event(eventName);
 	}
 
 	then(callback) {
-		this.listeners.push(callback);
+		this.origin.addEventListener(this.eventName, callback);
 	}
 
-	emmit(...args) {
-		this.listeners.forEach(
-			listener => listener(...args)
-		);
+	emmit() {
+		this.origin.dispatchEvent(this.event);
 	}
 }
 
