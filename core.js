@@ -1,14 +1,14 @@
 export class Property
 {
 	change = (value) => {};
-	_value = null;
+	__value = null;
 
 	get value() {
-		return this._value;
+		return this.__value;
 	}
 
 	set value(value) {
-		this._value = value;
+		this.__value = value;
 		this.change(value);
 	}
 
@@ -33,7 +33,7 @@ export class Property
 	}
 }
 
-export class EventEmmitter extends EventTarget
+export class EventEmitter extends EventTarget
 {
 	constructor(eventName, origin) {
 		super();
@@ -61,7 +61,7 @@ export class EventEmmitter extends EventTarget
 		this.origin.addEventListener(this.eventName, callback);
 	}
 
-	emmit() {
+	emit() {
 		this.origin.dispatchEvent(this.event);
 	}
 }
@@ -200,25 +200,25 @@ export class Communicator
 		if (properties === null || properties === undefined) {
 			properties = {};
 		}
-		this.functions = {};
-		this.properties = properties;
+		this.__functions = {};
+		this.__properties = properties;
 	}
 
 	registerProperty(name, property) {
-		this.properties[name] = property;
+		this.__properties[name] = property;
 	}
 
 	getProperty(name) {
-		return this.properties[name];
+		return this.__properties[name];
 	}
 
 	registerFunction(name, func) {
-		this.functions[name] = func;
+		this.__functions[name] = func;
 	}
 
 	getFunction(name) {
-		if (name in this.functions) {
-			return this.functions[name];
+		if (name in this.__functions) {
+			return this.__functions[name];
 		}
 		return () => null;
 	}
@@ -228,40 +228,44 @@ export class Switch extends Component
 {
 	constructor(props) {
 		super(props);
-		this.components = {};
-		this.selectedKey = null;
+		this.__components = {};
+		this.__selectedKey = null;
+	}
+
+	get selectedKey() {
+		return this.__selectedKey;
 	}
 
 	show(selector) {
 		super.show(selector);
 
-		if (this.selectedKey) {
-			this.select(this.selectedKey);
+		if (this.__selectedKey) {
+			this.select(this.__selectedKey);
 		}
 	}
 
 	setComponent(key, component) {
-		this.components[key] = component;
+		this.__components[key] = component;
 	}
 
 	getComponent(key) {
-		if (key in this.components) {
-			return this.components[key];
+		if (key in this.__components) {
+			return this.__components[key];
 		}
 		return null;
 	}
 
 	getSelected() {
-		if (this.selectedKey) {
-			return this.components[this.selectedKey];
+		if (this.__selectedKey) {
+			return this.__components[this.__selectedKey];
 		}
 		return null;
 	}
 
 	select(key) {
-		if (key in this.components) {
-			this.selectedKey = key;
-			this.components[key].show(this.selector);
+		if (key in this.__components) {
+			this.__selectedKey = key;
+			this.__components[key].show(this.selector);
 		}
 	}
 
@@ -284,15 +288,15 @@ export class TextComponent extends Component
 			text = "";
 		}
 
-		props.text_value = text;
+		props.text__value = text;
 		super(props);
 	}
 
 	setText(text) {
-		this.text_value = '' + text;
+		this.text__value = '' + text;
 	}
 
 	render() {
-		return this.dataset.text || this.text_value;
+		return this.dataset.text || this.text__value;
 	}
 }

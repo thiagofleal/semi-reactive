@@ -4,15 +4,15 @@ export class TableComponent extends Component
 {
 	constructor(tableSelector, props) {
 		super(props);
-		this.scrollY = '50vh';
+		this.__scrollY = '50vh';
 
 		if (tableSelector === undefined || tableSelector === null) {
 			tableSelector = 'table';
 		}
 
-		this.tableSelector = tableSelector;
-		this.options = {};
-		this.columns = [];
+		this.__tableSelector = tableSelector;
+		this.__options = {};
+		this.__columns = [];
 	}
 
 	limitChars(text, max) {
@@ -23,26 +23,14 @@ export class TableComponent extends Component
 	}
 
 	setOption(key, value) {
-		this.options[key] = value;
+		this.__options[key] = value;
 	}
 
 	getOption(key) {
-		return this.options[key];
+		return this.__options[key];
 	}
 	
-	create(options) {
-		let id = options.id ?? null;
-		let header = options.header ?? null;
-		let data = options.data ?? null;
-		let fields = options.fields ?? null;
-		let footer = options.footer ?? null;
-		let classes = options.classes ?? null;
-		let tr_classes = options.tr_classes ?? null;
-		let td_classes = options.td_classes ?? null;
-		let columns = options.columns ?? null;
-		let tr = options.tr ?? null;
-		let td = options.td ?? null;
-		
+	create({ id, header, data, fields, footer, classes, tr_classes, td_classes, columns, tr, td }) {
 		if (header === null || header === undefined) {
 			header = [];
 		}
@@ -93,7 +81,7 @@ export class TableComponent extends Component
 			fields.push(key);
 		}
 		
-		this.columns = columns;
+		this.__columns = columns;
 
 		return `
 			<table id="${id}" class="${classes}">
@@ -101,7 +89,11 @@ export class TableComponent extends Component
 					<tr class="">
 						${
 							header.map(
-								(th, key) => `<th style="width: ${columns[key].width}">${th}</th>`
+								(th, key) => `
+									<th style="width: ${columns[key].width}">
+										${th}
+									</th>
+								`
 							).join('')
 						}
 					</tr>
@@ -135,7 +127,11 @@ export class TableComponent extends Component
 					<tr class="">
 						${
 							footer.map(
-								(td, key) => `<td style="width: ${columns[key].width}">${td}</td>`
+								(td, key) => `
+									<td style="width: ${columns[key].width}">
+										${td}
+									</td>
+								`
 							).join('')
 						}
 					</tr>
@@ -151,7 +147,7 @@ export class TableComponent extends Component
 			"paging": true,
 			"ordering": true,
 			"info": true,
-			"scrollY": this.scrollY,
+			"scrollY": this.__scrollY,
 			"scrollCollapse": true,
 			"fnDrawCallback": oSettings => {
 				$(oSettings.nTableWrapper).find('.pagination li:not(.active) *').addClass('text-info');
@@ -163,26 +159,26 @@ export class TableComponent extends Component
 				}
 			},
 			"fnInitComplete": () => {
-				$(this.tableSelector).show();
+				$(this.__tableSelector).show();
 			}
 		};
 
-		for (const key in this.options) {
-			options[key] = this.options[key];
+		for (const key in this.__options) {
+			options[key] = this.__options[key];
 		}
 
 		$(() => {
 			let table = null;
-			$(this.tableSelector).hide();
+			$(this.__tableSelector).hide();
 			
-			if ($.fn.dataTable.isDataTable(this.tableSelector)) {
-				table = $(this.tableSelector).DataTable();
+			if ($.fn.dataTable.isDataTable(this.__tableSelector)) {
+				table = $(this.__tableSelector).DataTable();
 			} else {
-				table = $(this.tableSelector).DataTable(options);
+				table = $(this.__tableSelector).DataTable(options);
 			}
 
-			for (let index in this.columns) {
-				table.column(index).visible(this.columns[index].visible);
+			for (let index in this.__columns) {
+				table.column(index).visible(this.__columns[index].visible);
 			}
 			
 			$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
@@ -199,19 +195,19 @@ export class FormComponent extends Component
 	}
 
 	addFieldControl(name, value) {
-		Object.defineProperty(this.controlNames, name, value);
+		Object.defineProperty(this.__controlNames, name, value);
 	}
 
 	setFieldsControls(controls) {
-		this.controlNames = {};
+		this.__controlNames = {};
 		for (const key in controls) {
 			this.addFieldControl(key, controls[key]);
 		}
 	}
 
 	__onInput(event, target) {
-		this.controlNames[target] = event.target.value;
-		event.target.value = this.controlNames[target]
+		this.__controlNames[target] = event.target.value;
+		event.target.value = this.__controlNames[target]
 	}
 
 	__renderAttributes(attributes) {
@@ -233,7 +229,7 @@ export class FormComponent extends Component
 			type: 'text',
 			fieldControlName: '',
 			events: ['onkeyup', 'onchange'],
-			value: this.controlNames[options.fieldControlName]
+			value: this.__controlNames[options.fieldControlName]
 		};
 
 		for (const key in defaultOptions) {
