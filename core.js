@@ -70,8 +70,9 @@ export class Component extends EventTarget
 {
 	constructor(props, enabled) {
 		super();
-		this.children = [];
-		this.enabled = (enabled === null || enabled === undefined || enabled === true);
+		this.__children = [];
+		this.__enabled = (enabled === null || enabled === undefined || enabled === true);
+		this.element = null;
 		this.dataset = {};
 		this.definePropertiesObject(props || {});
 		this.__first = true;
@@ -94,13 +95,12 @@ export class Component extends EventTarget
 	}
 
 	reload() {
-		if (this.enabled) {
+		if (this.__enabled) {
 			const result = this.__selectAll();
 			
 			const attrComponent = (elem) => {
-				elem.component = this;
-
 				for (let child of elem.childNodes) {
+					child.component = this;
 					attrComponent(child);
 				}
 			}
@@ -115,23 +115,24 @@ export class Component extends EventTarget
 
 			if (this.__first) {
 				for (let item of result) {
+					this.element = item;
 					this.dataset = item.dataset;
 					this.onFirst(item);
 				}
 				this.__first = false;
 			}
 		}
-		return this.enabled;
+		return this.__enabled;
 	}
 
 	enable() {
-		this.enabled = true;
+		this.__enabled = true;
 		this.dispatchComponentEvent('enable');
 		this.reload();
 	}
 
 	disable() {
-		this.enabled = false;
+		this.__enabled = false;
 		for (let el of this.__selectAll()) {
 			el.innerHTML = '';
 		}
@@ -165,7 +166,7 @@ export class Component extends EventTarget
 		if (eventHandlers === undefined || eventHandlers === null) {
 			eventHandlers = [];
 		}
-		this.children.push(child);
+		this.__children.push(child);
 		child.show(selector);
 
 		for (let handler of eventHandlers) {
@@ -174,7 +175,7 @@ export class Component extends EventTarget
 	}
 
 	__loadChildren() {
-		for (let child of this.children) {
+		for (let child of this.__children) {
 			child.reload();
 		}
 	}
@@ -191,6 +192,10 @@ export class Component extends EventTarget
 		const event = new Event('component.' + eventName);
 		event.component = this;
 		this.dispatchEvent(event);
+	}
+
+	getAttribute(attr) {
+		return this.element.getAttribute(attr);
 	}
 }
 
