@@ -204,6 +204,13 @@ export class Component extends EventTarget
 	getAttribute(attr) {
 		return this.element.getAttribute(attr);
 	}
+
+	getFunctionAttribute(attr, caller) {
+		const attr = this.getAttribute(attr);
+		return function() {
+			return new Function(attr).call(caller);
+		};
+	}
 }
 
 export class Communicator
