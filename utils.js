@@ -299,13 +299,13 @@ export class ModalComponent extends Component
 			keyboard: false,
 			focus: true
 		};
-		const modalSelect = $(`${this.selector}>.modal`);
+		const modalSelect = $(`${this.getSelector()}>.modal`);
 		modalSelect.modal(options);
 		modalSelect.on('shown.bs.modal', () => this.onOpen());
 	}
 
 	close() {
-		const modalSelect = $(`${this.selector}>.modal`);
+		const modalSelect = $(`${this.getSelector()}>.modal`);
 		modalSelect.modal('hide');
 		modalSelect.on('hidden.bs.modal', () => {
 			this.onClose();

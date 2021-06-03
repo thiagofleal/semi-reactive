@@ -74,46 +74,53 @@ export class Component extends EventTarget
 		this.__enabled = (enabled === null || enabled === undefined || enabled === true);
 		this.element = null;
 		this.dataset = {};
-		this.definePropertiesObject(props || {});
 		this.__first = true;
+		this.__selector = null;
+		this.definePropertiesObject(props || {});
 	}
 
 	render() {
 		return '';
 	}
 
+	getSelector() {
+		return this.__selector;
+	}
+
 	onFirst() {}
 
 	show(selector) {
-		this.selector = selector;
+		this.__selector = selector;
 		this.reload();
 		this.dispatchComponentEvent("show");
 	}
 
 	__selectAll() {
-		return document.querySelectorAll(this.selector);
+		return document.querySelectorAll(this.__selector);
 	}
 
 	reload() {
 		if (this.__enabled) {
 			const result = this.__selectAll();
+			let execFirst = false;
 			
 			const attrComponent = (elem) => {
 				for (let child of elem.childNodes) {
 					child.component = this;
 					attrComponent(child);
 				}
-			}
-
+			};
+			
 			for (let item of result) {
+				execFirst = true;
+				this.element = item;
 				this.dataset = item.dataset;
 				item.innerHTML = this.render();
 				attrComponent(item);
 			}
 			this.__loadChildren();
-			this.dispatchComponentEvent('reload');
 
-			if (this.__first) {
+			if (this.__first && execFirst) {
 				for (let item of result) {
 					this.element = item;
 					this.dataset = item.dataset;
@@ -270,7 +277,7 @@ export class Switch extends Component
 	select(key) {
 		if (key in this.__components) {
 			this.__selectedKey = key;
-			this.__components[key].show(this.selector);
+			this.__components[key].show(this.__selector);
 		}
 	}
 
