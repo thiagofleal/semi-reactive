@@ -102,7 +102,6 @@ export class Component extends EventTarget
 	reload() {
 		if (this.__enabled) {
 			const result = this.__selectAll();
-			let execFirst = false;
 			
 			const attrComponent = (elem) => {
 				for (let child of elem.childNodes) {
@@ -112,7 +111,6 @@ export class Component extends EventTarget
 			};
 			
 			for (let item of result) {
-				execFirst = true;
 				this.element = item;
 				this.dataset = item.dataset;
 				item.innerHTML = this.render();
@@ -120,13 +118,13 @@ export class Component extends EventTarget
 			}
 			this.__loadChildren();
 
-			if (this.__first && execFirst) {
+			if (this.__first) {
 				for (let item of result) {
 					this.element = item;
 					this.dataset = item.dataset;
 					this.onFirst(item);
+					this.__first = false;
 				}
-				this.__first = false;
 			}
 		}
 		return this.__enabled;
@@ -205,10 +203,10 @@ export class Component extends EventTarget
 		return this.element.getAttribute(attr);
 	}
 
-	getFunctionAttribute(attr, caller) {
+	getFunctionAttribute(attr, caller, ...args) {
 		const func = this.getAttribute(attr);
-		return function() {
-			return new Function(func).call(caller);
+		return function(...prmt) {
+			return new Function(...args, func).call(caller, ...prmt);
 		};
 	}
 }
