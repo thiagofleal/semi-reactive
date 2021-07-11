@@ -61,7 +61,7 @@ export class EventEmitter extends EventTarget
 	}
 
 	emit(data) {
-		const event = new Event(eventName);
+		const event = new Event(this.eventName);
 		event.data = data;
 		this.origin.dispatchEvent(event);
 	}
