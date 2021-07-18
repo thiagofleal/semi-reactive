@@ -262,6 +262,15 @@ export class Switch extends Component
 		}
 	}
 
+	getAllComponents() {
+		const ret = [];
+
+		for (const key in this.__components) {
+			ret.push(this.__components[key]);
+		}
+		return ret;
+	}
+
 	setComponent(key, component) {
 		this.__components[key] = component;
 	}
@@ -302,6 +311,10 @@ export class Router extends Switch
 		super(props);
 		this.__routes = [];
 		this.__urlPath = null;
+	}
+
+	getRoutes() {
+		return this.__routes;
 	}
 
 	setRoutes(routes) {
