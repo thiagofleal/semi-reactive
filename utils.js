@@ -44,7 +44,7 @@ export class TableComponent extends Component
 			footer = [];
 		}
 		if (classes === null || classes === undefined) {
-			classes = 'table table-sm table-responsive d-block d-md-table table-striped';
+			classes = 'table table-sm table-responsive d-table table-striped';
 		}
 		if (columns === null || columns === undefined) {
 			columns = header.map(i => {
