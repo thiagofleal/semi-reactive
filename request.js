@@ -2,7 +2,7 @@ export default class Request
 {
 	constructor(beforeFetch, catchFetchReturn) {
 		this.__beforeFetch = beforeFetch ? beforeFetch : () => {};
-		this.__catchFetch = catchFetch ? catchFetch : () => {};
+		this.__catchFetch = catchFetch ? catchFetch : () => true;
 	}
 
 	async request(url, method, body, args) {
@@ -18,8 +18,10 @@ export default class Request
 
 		const ret = await fetch(url, args);
 
-		this.__catchFetchReturn(ret);
-		return ret;
+		if (this.__catchFetchReturn(ret)) {
+			return ret;
+		}
+		return false;
 	}
 
 	async getResponse(url, args) {
