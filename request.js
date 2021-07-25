@@ -1,8 +1,8 @@
-export default class Request
+export class Request
 {
 	constructor(beforeFetch, catchFetchReturn) {
 		this.__beforeFetch = beforeFetch ? beforeFetch : () => {};
-		this.__catchFetch = catchFetch ? catchFetch : () => true;
+		this.__catchFetchReturn = catchFetchReturn ? catchFetchReturn : () => true;
 	}
 
 	async request(url, method, body, args) {
