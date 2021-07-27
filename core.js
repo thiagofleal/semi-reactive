@@ -248,6 +248,7 @@ export class Switch extends Component
 		super(props);
 		this.__components = {};
 		this.__selectedKey = null;
+		this.__selected = null;
 	}
 
 	get selectedKey() {
@@ -290,9 +291,17 @@ export class Switch extends Component
 	}
 
 	select(key) {
+		if (this.__selected && this.__selected.onUnselected) {
+			this.__selected.onUnselected();
+		}
 		if (key in this.__components) {
 			this.__selectedKey = key;
+			this.__selected = this.__components[key];
 			this.__components[key].show(this.__selector);
+
+			if (this.__components[key].onSelected) {
+				this.__components[key].onSelected();
+			}
 		}
 	}
 
