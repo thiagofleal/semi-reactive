@@ -11,6 +11,8 @@ export class TableComponent extends Component
 		}
 
 		this.__tableSelector = tableSelector;
+		this.__paginationTextClass = "";
+		this.__selectedBackgroundClass = "";
 		this.__options = {};
 		this.__columns = [];
 	}
@@ -30,7 +32,7 @@ export class TableComponent extends Component
 		return this.__options[key];
 	}
 	
-	create({ id, header, data, fields, footer, classes, tr_classes, td_classes, columns, tr, td }) {
+	create({ id, header, data, fields, footer, classes, thead_classes, tr_classes, td_classes, columns, tr, td }) {
 		if (header === null || header === undefined) {
 			header = [];
 		}
@@ -44,7 +46,7 @@ export class TableComponent extends Component
 			footer = [];
 		}
 		if (classes === null || classes === undefined) {
-			classes = 'table table-sm table-responsive d-table table-striped';
+			classes = "";
 		}
 		if (columns === null || columns === undefined) {
 			columns = header.map(i => {
@@ -61,6 +63,9 @@ export class TableComponent extends Component
 				};
 			});
 		}
+		if (thead_classes === null || thead_classes === undefined) {
+			thead_classes = '';
+		}
 		if (tr_classes === null || tr_classes === undefined) {
 			tr_classes = '';
 		}
@@ -75,8 +80,10 @@ export class TableComponent extends Component
 		}
 
 		const format = fields;
-		fields = [];
 
+		fields = [];
+		classes = `table table-responsive d-table ${ classes }`;
+		
 		for (let key in format) {
 			fields.push(key);
 		}
@@ -85,7 +92,7 @@ export class TableComponent extends Component
 
 		return `
 			<table id="${id}" class="${classes}">
-				<thead class="thead">
+				<thead class="thead ${ thead_classes }">
 					<tr class="">
 						${
 							header.map(
@@ -140,6 +147,17 @@ export class TableComponent extends Component
 		`;
 	}
 
+	onDrawTable(oSettings) {}
+
+	setPaginationClasses(text, selectedBackground) {
+		if (text) {
+			this.__paginationTextClass = text;
+		}
+		if (selectedBackground) {
+			this.__selectedBackgroundClass = selectedBackground;
+		}
+	}
+
 	reload() {
 		super.reload();
 
@@ -150,8 +168,12 @@ export class TableComponent extends Component
 			"scrollY": this.__scrollY,
 			"scrollCollapse": true,
 			"fnDrawCallback": oSettings => {
-				$(oSettings.nTableWrapper).find('.pagination li:not(.active) *').addClass('text-info');
-				$(oSettings.nTableWrapper).find('.pagination li.active *').addClass('bg-info');
+				$(".page-item.active .page-link").css({
+					borderColor: "rgba(0, 0, 0, .15)"
+				})
+				$(oSettings.nTableWrapper).find('.pagination li:not(.active):not(.disabled) *').addClass(this.__paginationTextClass);
+				$(oSettings.nTableWrapper).find('.page-item.active .page-link, .pagination li.active *').addClass(this.__selectedBackgroundClass);
+				this.onDrawTable(oSettings);
 				if (oSettings._iDisplayLength >= oSettings.fnRecordsDisplay()) {
 					$(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
 				} else {
@@ -299,7 +321,7 @@ export class ModalComponent extends Component
 			keyboard: false,
 			focus: true
 		};
-		const modalSelect = $(`${this.getSelector()}>.modal`);
+		const modalSelect = $(`${ this.getSelector() }>.modal`);
 		modalSelect.modal(options);
 		modalSelect.on('shown.bs.modal', () => this.onOpen());
 	}
