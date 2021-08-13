@@ -1,5 +1,9 @@
 import { Component } from './core.js';
 
+import "./vendor/jquery.min.js";
+import "./vendor/bootstrap.min.js";
+import "./vendor/datatables.min.js";
+
 export class TableComponent extends Component
 {
 	constructor(tableSelector, props) {
