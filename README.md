@@ -1,6 +1,12 @@
 # semi-reactive
 ###### A small ES6 semi-reactive components library.
 Semi-reactive is a **pure EcmaScript** implementation of **reactive components**. With it, you can easily create reactive components without any compilation or pre-processor process, just write and run on the browser.
+###### Features and tools
+- Create components with pure EcmaScript, no need to use Babel or compile
+- Auto add Bootstrap 4, no need to do it manualy
+- Easily create modals, reactive-forms and data-tables
+- Small implementation of switches and routers
+- Small implementation of observables
 
 #
 #### Adding semi-reactive to project
