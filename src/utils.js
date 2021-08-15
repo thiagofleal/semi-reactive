@@ -244,6 +244,13 @@ export class FormComponent extends Component
 	__renderAttributes(attributes) {
 		return attributes.map(
 			attr => {
+				if (attr.name == 'enabled') {
+					if (attr.value) {
+						return '';
+					} else {
+						return 'disabled';
+					}
+				}
 				return `${attr.name}="${
 					Array.isArray(attr)
 						?	attr.join(' ')
