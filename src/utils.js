@@ -1,5 +1,9 @@
 import { Component } from './core.js';
 
+import "./vendor/jquery.min.js";
+import "./vendor/bootstrap.min.js";
+import "./vendor/datatables.min.js";
+
 export class TableComponent extends Component
 {
 	constructor(tableSelector, props) {
@@ -91,14 +95,14 @@ export class TableComponent extends Component
 		this.__columns = columns;
 
 		return `
-			<table id="${id}" class="${classes}">
+			<table ${ id ? "id=" + id : "" } class="${ classes }">
 				<thead class="thead ${ thead_classes }">
 					<tr class="">
 						${
 							header.map(
 								(th, key) => `
-									<th style="width: ${columns[key].width}">
-										${th}
+									<th style="width: ${ columns[key].width }">
+										${ th }
 									</th>
 								`
 							).join('')
@@ -110,11 +114,11 @@ export class TableComponent extends Component
 					${
 						data.map(
 							(row, index) => `
-								<tr class="${tr_classes}" ${tr(row, index)}>
+								<tr class="${ tr_classes }" ${ tr(row, index) }>
 									${
 										fields.map(
 											(field, key) => `
-												<td style="width: ${columns[key].width}" class="${td_classes}" ${td(field, key, row[field])}>
+												<td style="width: ${ columns[key].width }" class="${ td_classes }" ${ td(field, key, row[field]) }>
 													${
 														(field in format)
 															? format[field](row[field])
@@ -135,8 +139,8 @@ export class TableComponent extends Component
 						${
 							footer.map(
 								(td, key) => `
-									<td style="width: ${columns[key].width}">
-										${td}
+									<td style="width: ${ columns[key].width }">
+										${ td }
 									</td>
 								`
 							).join('')
