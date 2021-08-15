@@ -236,6 +236,11 @@ export class FormComponent extends Component
 		event.target.value = this.__controlNames[target]
 	}
 
+	__onCheckbox(event, target) {
+		this.__controlNames[target] = event.target.checked;
+		event.target.checked = this.__controlNames[target]
+	}
+
 	__renderAttributes(attributes) {
 		return attributes.map(
 			attr => {
@@ -263,24 +268,53 @@ export class FormComponent extends Component
 				options[key] = defaultOptions[key];
 			}
 		}
-
 		for (const key in options) {
 			attributes.push({
 				name: key,
 				value: options[key]
 			});
 		}
-
 		for (const event of options.events) {
 			attributes.push({
 				name: event,
 				value: `this.component.__onInput(event, '${options.fieldControlName}')`
 			});
 		}
+		return `<input ${this.__renderAttributes(attributes)}>`;
+	}
 
-		delete options.events;
-		delete options.fieldControlName;
+	checkbox(options) {
+		const attributes = [];
 
+		const defaultOptions = {
+			type: 'checkbox',
+			fieldControlName: '',
+			events: ['onchange'],
+			checked: this.__controlNames[options.fieldControlName]
+		};
+
+		for (const key in defaultOptions) {
+			if (options[key] === undefined) {
+				options[key] = defaultOptions[key];
+			}
+		}
+		if (options.checked) {
+			options.checked = "checked";
+		} else {
+			delete options['checked'];
+		}
+		for (const key in options) {
+			attributes.push({
+				name: key,
+				value: options[key]
+			});
+		}
+		for (const event of options.events) {
+			attributes.push({
+				name: event,
+				value: `this.component.__onCheckbox(event, '${options.fieldControlName}')`
+			});
+		}
 		return `<input ${this.__renderAttributes(attributes)}>`;
 	}
 }
