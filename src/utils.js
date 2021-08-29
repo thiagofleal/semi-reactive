@@ -94,13 +94,13 @@ export class TableComponent extends Component
 		
 		this.__columns = columns;
 
-		return `
+		return /*html*/`
 			<table ${ id ? "id=" + id : "" } class="${ classes }">
 				<thead class="thead ${ thead_classes }">
 					<tr class="">
 						${
 							header.map(
-								(th, key) => `
+								(th, key) => /*html*/`
 									<th style="width: ${ columns[key].width }">
 										${ th }
 									</th>
@@ -113,11 +113,11 @@ export class TableComponent extends Component
 				<tbody class="tbody">
 					${
 						data.map(
-							(row, index) => `
+							(row, index) => /*html*/`
 								<tr class="${ tr_classes }" ${ tr(row, index) }>
 									${
 										fields.map(
-											(field, key) => `
+											(field, key) => /*html*/`
 												<td style="width: ${ columns[key].width }" class="${ td_classes }" ${ td(field, key, row[field]) }>
 													${
 														(field in format)
@@ -138,7 +138,7 @@ export class TableComponent extends Component
 					<tr class="">
 						${
 							footer.map(
-								(td, key) => `
+								(td, key) => /*html*/`
 									<td style="width: ${ columns[key].width }">
 										${ td }
 									</td>
@@ -146,7 +146,7 @@ export class TableComponent extends Component
 							).join('')
 						}
 					</tr>
-				</tfooter>
+				</tfoot>
 			</table>
 		`;
 	}
@@ -287,7 +287,7 @@ export class FormComponent extends Component
 				value: `this.component.__onInput(event, '${options.fieldControlName}')`
 			});
 		}
-		return `<input ${this.__renderAttributes(attributes)}>`;
+		return /*html*/`<input ${this.__renderAttributes(attributes)}>`;
 	}
 
 	checkbox(options) {
@@ -322,7 +322,7 @@ export class FormComponent extends Component
 				value: `this.component.__onCheckbox(event, '${options.fieldControlName}')`
 			});
 		}
-		return `<input ${this.__renderAttributes(attributes)}>`;
+		return /*html*/`<input ${this.__renderAttributes(attributes)}>`;
 	}
 }
 
@@ -380,7 +380,7 @@ export class ModalComponent extends Component
 	}
 
 	render() {
-		return `
+		return /*html*/`
 			<div class="modal fade custom-size" .modal" tabindex="-1" role="dialog" aria-hidden="true">
 				<div class="modal-dialog ${this.dataset.classes || ''}" role="document">
 					<div class="modal-content"></div>
