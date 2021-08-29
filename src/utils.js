@@ -86,68 +86,69 @@ export class TableComponent extends Component
 		const format = fields;
 
 		fields = [];
-		classes = `table table-responsive d-table ${ classes }`;
+		classes = `table ${ classes }`;
 		
 		for (let key in format) {
 			fields.push(key);
 		}
-		
 		this.__columns = columns;
 
-		return `
-			<table ${ id ? "id=" + id : "" } class="${ classes }">
-				<thead class="thead ${ thead_classes }">
-					<tr class="">
+		return /*html*/`
+			<div class="table-responsive">
+				<table ${ id ? "id=" + id : "" } class="${ classes }">
+					<thead class="thead ${ thead_classes }">
+						<tr class="">
+							${
+								header.map(
+									(th, key) => /*html*/`
+										<th style="width: ${ columns[key].width }">
+											${ th }
+										</th>
+									`
+								).join('')
+							}
+						</tr>
+					</thead>
+					
+					<tbody class="tbody">
 						${
-							header.map(
-								(th, key) => `
-									<th style="width: ${ columns[key].width }">
-										${ th }
-									</th>
+							data.map(
+								(row, index) => /*html*/`
+									<tr class="${ tr_classes }" ${ tr(row, index) }>
+										${
+											fields.map(
+												(field, key) => /*html*/`
+													<td style="width: ${ columns[key].width }" class="${ td_classes }" ${ td(field, key, row[field]) }>
+														${
+															(field in format)
+																? format[field](row[field])
+																: row[field]
+														}
+													</td>
+												`
+											).join('')
+										}
+									</tr>
 								`
 							).join('')
 						}
-					</tr>
-				</thead>
-				
-				<tbody class="tbody">
-					${
-						data.map(
-							(row, index) => `
-								<tr class="${ tr_classes }" ${ tr(row, index) }>
-									${
-										fields.map(
-											(field, key) => `
-												<td style="width: ${ columns[key].width }" class="${ td_classes }" ${ td(field, key, row[field]) }>
-													${
-														(field in format)
-															? format[field](row[field])
-															: row[field]
-													}
-												</td>
-											`
-										).join('')
-									}
-								</tr>
-							`
-						).join('')
-					}
-				</tbody>
-				
-				<tfoot class="tfoot">
-					<tr class="">
-						${
-							footer.map(
-								(td, key) => `
-									<td style="width: ${ columns[key].width }">
-										${ td }
-									</td>
-								`
-							).join('')
-						}
-					</tr>
-				</tfooter>
-			</table>
+					</tbody>
+					
+					<tfoot class="tfoot">
+						<tr class="">
+							${
+								footer.map(
+									(td, key) => /*html*/`
+										<td style="width: ${ columns[key].width }">
+											${ td }
+										</td>
+									`
+								).join('')
+							}
+						</tr>
+					</tfoot>
+				</table>
+			</div>
 		`;
 	}
 
@@ -287,7 +288,7 @@ export class FormComponent extends Component
 				value: `this.component.__onInput(event, '${options.fieldControlName}')`
 			});
 		}
-		return `<input ${this.__renderAttributes(attributes)}>`;
+		return /*html*/`<input ${this.__renderAttributes(attributes)}>`;
 	}
 
 	checkbox(options) {
@@ -322,7 +323,7 @@ export class FormComponent extends Component
 				value: `this.component.__onCheckbox(event, '${options.fieldControlName}')`
 			});
 		}
-		return `<input ${this.__renderAttributes(attributes)}>`;
+		return /*html*/`<input ${this.__renderAttributes(attributes)}>`;
 	}
 }
 
@@ -380,7 +381,7 @@ export class ModalComponent extends Component
 	}
 
 	render() {
-		return `
+		return /*html*/`
 			<div class="modal fade custom-size" .modal" tabindex="-1" role="dialog" aria-hidden="true">
 				<div class="modal-dialog ${this.dataset.classes || ''}" role="document">
 					<div class="modal-content"></div>
