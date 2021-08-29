@@ -13,14 +13,14 @@ var SemiReactive = {
 };
 
 document.writeln(
-	`<link type="text/css" rel="stylesheet" href="${ SemiReactive.frameworkPath() }css/semi-reactive.css">`
+	/*html*/`<link type="text/css" rel="stylesheet" href="${ SemiReactive.frameworkPath() }css/semi-reactive.css">`
 );
 document.writeln(
-	`<meta name="viewport" content="width=device-width, initial-scale=1.0">`
+	/*html*/`<meta name="viewport" content="width=device-width, initial-scale=1.0">`
 );
 
 document.writeln(
-	`<script type="module">
+	/*html*/`<script type="module">
 		const construct = (await import("${ SemiReactive.script.getAttribute('component-file') }")).default;
 		const component = new construct();
 		component.show("${ SemiReactive.script.getAttribute('target') }");
