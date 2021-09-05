@@ -116,7 +116,8 @@ export class Component extends EventTarget
 			for (let item of result) {
 				this.element = item;
 				this.dataset = item.dataset;
-				item.innerHTML = this.render();
+				item.innerHTML = this.render(item);
+				this.onReload ? this.onReload(item, this.__first) : undefined;
 				attrComponent(item);
 			}
 			this.__loadChildren();
