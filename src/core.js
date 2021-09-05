@@ -1,8 +1,5 @@
 export class Property
 {
-	change = (value) => {};
-	__value = null;
-
 	get value() {
 		return this.__value;
 	}
@@ -12,24 +9,27 @@ export class Property
 		this.change(value);
 	}
 
-	constructor(prop, component) {
+	constructor(value, component) {
+		this.change = () => {};
 		this.setComponent(component);
-		this.value = prop;
+		this.__value = value;
 	}
 
 	setComponent(component) {
 		if (component !== null && component !== undefined) {
-			this.change = (value) => component.reload();
+			this.change = () => component.reload();
 		}
 	}
 
-	associate(component) {
-		const ret = new Property(this.value);
-		ret.change = (value) => {
-			this.value = value;
-			component.reload();
-		};
-		return ret;
+	associate(property) {
+		if (property && property instanceof Property) {
+			property.value = this.value;
+			const change = this.change;
+			this.change = () => {
+				change();
+				property.value = this.value;
+			};
+		}
 	}
 }
 
@@ -61,8 +61,10 @@ export class EventEmitter extends EventTarget
 	}
 
 	emit(data) {
-		const event = new Event(this.eventName);
-		event.data = data;
+		if (typeof data !== "object") {
+			data = { detail: data };
+		}
+		const event = new CustomEvent(this.eventName, data);
 		this.origin.dispatchEvent(event);
 	}
 }
@@ -77,6 +79,7 @@ export class Component extends EventTarget
 		this.dataset = {};
 		this.__first = true;
 		this.__selector = null;
+		this.__properties = {};
 		this.definePropertiesObject(props || {});
 	}
 
@@ -93,7 +96,7 @@ export class Component extends EventTarget
 	show(selector) {
 		this.__selector = selector;
 		this.reload();
-		this.dispatchComponentEvent("show");
+		this.onShow ? this.onShow() : undefined;
 	}
 
 	__selectAll() {
@@ -103,7 +106,6 @@ export class Component extends EventTarget
 	reload() {
 		if (this.__enabled) {
 			const result = this.__selectAll();
-			
 			const attrComponent = (elem) => {
 				for (let child of elem.childNodes) {
 					child.component = this;
@@ -133,8 +135,8 @@ export class Component extends EventTarget
 
 	enable() {
 		this.__enabled = true;
-		this.dispatchComponentEvent('enable');
 		this.reload();
+		this.onEnable ? this.onEnable() : undefined;
 	}
 
 	disable() {
@@ -142,20 +144,21 @@ export class Component extends EventTarget
 		for (let el of this.__selectAll()) {
 			el.innerHTML = '';
 		}
-		this.dispatchComponentEvent('disable');
+		this.onDisable ? this.onDisable() : undefined;
 	}
 
-	property(value) {
-		return new Property(value, this);
+	getProperty(name) {
+		return this.__properties[name];
 	}
 
 	defineProperty(name, initial) {
-		const prop = this.property(initial);
+		const prop = new Property(initial, this);
 		
 		Object.defineProperty(this, name, {
 			get: () => prop.value,
 			set: value => prop.value = value
 		});
+		return this.__properties[name] = prop;
 	}
 
 	definePropertiesObject(obj) {
@@ -164,8 +167,19 @@ export class Component extends EventTarget
 		}
 	}
 
-	associateProperty(property) {
-		return property.associate(this);
+	associateProperty(name, src) {
+		let property = this.getProperty(name);
+
+		if (!property) {
+			property = this.defineProperty(name, null);
+		}
+		src.associate(property);
+	}
+
+	associateProperties(properties) {
+		for (const key in properties) {
+			this.associateProperty(key, properties[key]);
+		}
 	}
 
 	appendChild(child, selector, eventHandlers) {
@@ -190,16 +204,6 @@ export class Component extends EventTarget
 		document.querySelector('head title').innerHTML = title;
 	}
 
-	addComponentEventListener(eventName, listener) {
-		this.addEventListener('component.' + eventName, listener);
-	}
-
-	dispatchComponentEvent(eventName) {
-		const event = new Event('component.' + eventName);
-		event.component = this;
-		this.dispatchEvent(event);
-	}
-
 	getAttribute(attr) {
 		return this.element.getAttribute(attr);
 	}
@@ -209,36 +213,6 @@ export class Component extends EventTarget
 		return function(...prmt) {
 			return new Function(...args, func).call(caller, ...prmt);
 		};
-	}
-}
-
-export class Communicator
-{
-	constructor(properties) {
-		if (properties === null || properties === undefined) {
-			properties = {};
-		}
-		this.__functions = {};
-		this.__properties = properties;
-	}
-
-	registerProperty(name, property) {
-		this.__properties[name] = property;
-	}
-
-	getProperty(name) {
-		return this.__properties[name];
-	}
-
-	registerFunction(name, func) {
-		this.__functions[name] = func;
-	}
-
-	getFunction(name) {
-		if (name in this.__functions) {
-			return this.__functions[name];
-		}
-		return () => null;
 	}
 }
 

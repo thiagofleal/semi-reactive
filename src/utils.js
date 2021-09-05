@@ -341,7 +341,9 @@ export class FormComponent extends Component
 export class ModalComponent extends Component
 {
 	constructor(contentClass, ...args) {
-		super();
+		super({
+			__active: false
+		});
 		this.onOpen = this.onClose = () => null;
 		this.__content = new contentClass(this, ...args);
 	}
@@ -373,31 +375,23 @@ export class ModalComponent extends Component
 	}
 
 	open() {
-		const options = {
-			backdrop: 'static',
-			keyboard: false,
-			focus: true
-		};
-		const modalSelect = $(`${ this.getSelector() }>.modal`);
-		modalSelect.modal(options);
-		modalSelect.on('shown.bs.modal', () => this.onOpen());
+		this.__active = true;
+		this.onOpen();
 	}
 
 	close() {
-		const modalSelect = $(`${this.getSelector()}>.modal`);
-		modalSelect.modal('hide');
-		modalSelect.on('hidden.bs.modal', () => {
-			this.onClose();
-		});
+		this.__active = false;
+		this.onClose();
 	}
 
 	render() {
 		return /*html*/`
-			<div class="modal fade custom-size" .modal" tabindex="-1" role="dialog" aria-hidden="true">
-				<div class="modal-dialog ${this.dataset.classes || ''}" role="document">
-					<div class="modal-content"></div>
+			<div class="modal ${ this.dataset["modal-class"] || '' } ${ this.__active ? 'd-block show' : 'd-none' }" tabindex="-1" role="dialog" aria-hidden="true">
+				<div class="modal-dialog ${ this.dataset["modal-dialog-class"] || '' }" role="document">
+					<div class="modal-content" ${ this.dataset["modal-content-class"] || '' }></div>
 				</div>
 			</div>
+			<div class="modal-backdrop fade show ${ this.__active ? 'd-block' : 'd-none' }"></div>
 		`;
 	}
 }
