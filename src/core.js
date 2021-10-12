@@ -80,6 +80,7 @@ export class Component extends EventTarget
 		this.__first = true;
 		this.__selector = null;
 		this.__properties = {};
+		this.__parent = undefined;
 		this.definePropertiesObject(props || {});
 	}
 
@@ -148,6 +149,10 @@ export class Component extends EventTarget
 		this.onDisable ? this.onDisable() : undefined;
 	}
 
+	getParent() {
+		return this.__parent;
+	}
+
 	getProperty(name) {
 		return this.__properties[name];
 	}
@@ -188,6 +193,7 @@ export class Component extends EventTarget
 			eventHandlers = [];
 		}
 		this.__children.push(child);
+		child.__parent = this;
 		child.show(selector);
 
 		for (let handler of eventHandlers) {
@@ -207,6 +213,10 @@ export class Component extends EventTarget
 
 	getAttribute(attr) {
 		return this.element.getAttribute(attr);
+	}
+
+	getAllAttributes() {
+		return this.element.attributes;
 	}
 
 	getFunctionAttribute(attr, caller, ...args) {
