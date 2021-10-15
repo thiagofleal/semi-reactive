@@ -399,23 +399,31 @@ export class SimpleRouter extends Router
 
 export class TextComponent extends Component
 {
-	constructor(text, props) {
+	constructor(props) {
 		if (props === undefined || props === null) {
 			props = {};
 		}
-		if (text === undefined || text === null) {
-			text = "";
-		}
-
-		props.text__value = text;
+		props.default = "";
 		super(props);
 	}
 
-	setText(text) {
-		this.text__value = '' + text;
+	getText(property) {
+		if (property === undefined || property === null) {
+			property = "default";
+		}
+		return this[property];
+	}
+
+	setText(property, text) {
+		if (text === undefined || text === null) {
+			text = property;
+			property = "default";
+		}
+		this[property] = '' + text;
 	}
 
 	render() {
-		return this.dataset.text || this.text__value;
+		const property = this.getAttribute("control") || "default";
+		return this[property];
 	}
 }
