@@ -35,37 +35,20 @@ export class Property
 
 export class EventEmitter extends EventTarget
 {
-	constructor(eventName, origin) {
+	constructor(eventName) {
 		super();
-		if (eventName === undefined || eventName === null) {
-			const chars = "abcdefghijklmnopqrstuvwxyz";
-			const length = 10;
-			eventName = '';
-
-			for (let i = 0; i < length; i++) {
-				const i = Math.floor(Math.random() * length);
-				eventName += chars.charAt(i);
-			}
-		}
-
-		if (origin === undefined || origin === null) {
-			origin = this;
-		}
-
 		this.eventName = eventName;
-		this.origin = origin;
 	}
 
-	then(callback) {
-		this.origin.addEventListener(this.eventName, callback);
+	then(origin, callback) {
+		origin.addEventListener(this.eventName, callback);
 	}
 
-	emit(data) {
-		if (typeof data !== "object") {
+	emit(origin, data) {
+		if (typeof data !== "object" || !data.detail) {
 			data = { detail: data };
 		}
-		const event = new CustomEvent(this.eventName, data);
-		this.origin.dispatchEvent(event);
+		origin.dispatchEvent(new CustomEvent(this.eventName, data));
 	}
 }
 
@@ -75,13 +58,21 @@ export class Component extends EventTarget
 		super();
 		this.__children = [];
 		this.__enabled = (enabled === null || enabled === undefined || enabled === true);
-		this.element = null;
-		this.dataset = {};
+		this.__element = null;
+		this.__dataset = {};
 		this.__first = true;
 		this.__selector = null;
 		this.__properties = {};
 		this.__parent = undefined;
 		this.definePropertiesObject(props || {});
+	}
+
+	get element() {
+		return this.__element;
+	}
+
+	get dataset() {
+		return this.__dataset;
 	}
 
 	render() {
@@ -93,6 +84,20 @@ export class Component extends EventTarget
 	}
 
 	onFirst() {}
+
+	getElement() {
+		return this.element;
+	}
+
+	closestOf(element) {
+		return element.closest(this.getSelector());
+	}
+
+	copy() {
+		const copy = Object.create(this);
+		Object.assign(copy, this);
+		return copy;
+	}
 
 	show(selector) {
 		this.__selector = selector;
@@ -107,17 +112,18 @@ export class Component extends EventTarget
 	reload() {
 		if (this.__enabled) {
 			const result = this.__selectAll();
-			const attrComponent = (elem) => {
+			const attrComponent = elem => {
 				for (let child of elem.childNodes) {
-					child.component = this;
+					child.component = this.copy();
+					child.component.__element = elem;
 					attrComponent(child);
 				}
 			};
 			
 			for (let item of result) {
-				this.element = item;
-				this.dataset = item.dataset;
-				item.innerHTML = this.render(item);
+				this.__element = item;
+				this.__dataset = item.dataset;
+				item.innerHTML = this.render(item).trim();
 				this.onReload ? this.onReload(item, this.__first) : undefined;
 				attrComponent(item);
 			}
@@ -125,8 +131,8 @@ export class Component extends EventTarget
 
 			if (this.__first) {
 				for (let item of result) {
-					this.element = item;
-					this.dataset = item.dataset;
+					this.__element = item;
+					this.__dataset = item.dataset;
 					this.onFirst(item);
 					this.__first = false;
 				}
@@ -216,7 +222,11 @@ export class Component extends EventTarget
 	}
 
 	getAllAttributes() {
-		return this.element.attributes;
+		const attributes = {};
+		Array.from(this.element.attributes).forEach(
+			attr => attributes[attr.nodeName] = attr.nodeValue
+		);
+		return attributes;
 	}
 
 	getFunctionAttribute(attr, caller, ...args) {
@@ -283,6 +293,7 @@ export class Switch extends Component
 			this.__selectedKey = key;
 			this.__selected = this.__components[key];
 			this.__components[key].show(this.__selector);
+			this.__components[key].__element = this.getElement();
 
 			if (this.__components[key].onSelected) {
 				this.__components[key].onSelected();
