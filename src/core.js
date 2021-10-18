@@ -35,12 +35,24 @@ export class Property
 
 export class EventEmitter extends EventTarget
 {
-	constructor(eventName) {
+	constructor(eventName, component) {
 		super();
 		this.eventName = eventName;
+		this.setComponent(component);
 	}
 
-	then(origin, callback) {
+	get component() {
+		return this.__component;
+	}
+
+	setComponent(component) {
+		if (component instanceof Component) {
+			this.__component = component;
+		}
+	}
+
+	then(callback) {
+		const origin = this.component.getElement();
 		origin.addEventListener(this.eventName, callback);
 	}
 
@@ -431,6 +443,10 @@ export class TextComponent extends Component
 			property = "default";
 		}
 		this[property] = '' + text;
+	}
+
+	setControls(controls) {
+		this.definePropertiesObject(controls);
 	}
 
 	render() {
