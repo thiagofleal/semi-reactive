@@ -1,4 +1,4 @@
-import { Component } from './core.js';
+import { Component, EventEmitter } from './core.js';
 
 import "./vendor/jquery.min.js";
 import "./vendor/bootstrap.min.js";
@@ -248,6 +248,11 @@ export class FormFieldComponent extends Component
 		event.target.value = this.__controlNames[target]
 	}
 
+	__onCheckbox(event, target) {
+		this.__controlNames[target] = event.target.checked;
+		event.target.checked = this.__controlNames[target]
+	}
+
 	__renderAttributes(attributes) {
 		return attributes.map(
 			attr => {
@@ -256,6 +261,13 @@ export class FormFieldComponent extends Component
 						return '';
 					} else {
 						return 'disabled';
+					}
+				}
+				if (attr.name == 'checked') {
+					if (attr.value) {
+						return 'checked';
+					} else {
+						return '';
 					}
 				}
 				return `${attr.name}="${
@@ -339,12 +351,141 @@ export class InputField extends FormFieldComponent
 						${
 							list.map(option => /*html*/`
 								<option>${ option }</option>
-							`)
+							`).join('')
 						}
 					</datalist>
 				` : ""
 			}
 		`;
+	}
+}
+
+export class CheckBox extends FormFieldComponent
+{
+	constructor(controls) {
+		super();
+		this.setControllers(controls);
+	}
+
+	setAutocomplete(controls) {
+		for (const key in controls) {
+			this.addAutocomplete(key, controls[key]);
+		}
+	}
+
+	inputAttributes(options, controller) {
+		const attributes = [];
+
+		const defaultOptions = {
+			type: 'checkbox',
+			events: ['onchange'],
+			checked: this.__controlNames[controller]
+		};
+
+		for (const key in defaultOptions) {
+			if (options[key] === undefined) {
+				options[key] = defaultOptions[key];
+			}
+		}
+		for (const key in options) {
+			attributes.push({
+				name: key,
+				value: options[key]
+			});
+		}
+		for (const event of options.events) {
+			attributes.push({
+				name: event,
+				value: `this.component.__onCheckbox(event, '${controller}')`
+			});
+		}
+		return this.__renderAttributes(attributes);
+	}
+
+	render() {
+        const attr = this.getAllAttributes();
+		const controller = this.getAttribute("controller");
+		const options = {};
+		const regex = /^input-/i;
+		
+		for (let key in attr) {
+			if (regex.test(key)) {
+				options[key.replace(regex, "")] = attr[key];
+			}
+		}
+		return /*html*/`
+			<input ${ this.inputAttributes(options, controller) }>
+		`;
+	}
+}
+
+export class SelectField extends FormFieldComponent
+{
+	constructor() {
+		super({
+			default: []
+		});
+		this.onSelect = new EventEmitter("select", this);
+	}
+
+	getOptions(property) {
+		if (property === undefined || property === null) {
+			property = "default";
+		}
+		return this[property];
+	}
+
+	setOptions(property, text) {
+		if (text === undefined || text === null) {
+			text = property;
+			property = "default";
+		}
+		this[property] = '' + text;
+	}
+
+	setControls(controls) {
+		this.definePropertiesObject(controls);
+	}
+
+	onFirst(element) {
+		const handler = this.getFunctionAttribute("select", element, "event");
+		this.onSelect.then(handler);
+	}
+
+	__select(event) {
+		const element = this.getElement();
+		this.onSelect.emit(element, event.target.value);
+	}
+
+	render() {
+		const control = this.getAttribute("options");
+		const options = this[control];
+		const allAttr = this.getAllAttributes();
+		const attributes = [];
+		const regex = /^select-/i;
+
+		for (let key in allAttr) {
+			if (regex.test(key)) {
+				attributes.push({
+					name: key.replace(regex, ""),
+					value: allAttr[key]
+				});
+			}
+		}
+
+		return /*html*/`
+			<select ${this.__renderAttributes(attributes)} onchange="this.component.__select(event)">
+				${
+					options.map(
+						option => /*html*/`
+							<option value="${ option.value }">
+								${ option.text }
+							</option>
+						`
+					).join('')
+				}
+			</select>
+		`
 	}
 }
 
