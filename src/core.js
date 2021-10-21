@@ -127,7 +127,7 @@ export class Component extends EventTarget
 			const attrComponent = elem => {
 				for (let child of elem.childNodes) {
 					child.component = this.copy();
-					child.component.__element = elem;
+					child.component.__element = elem.closest(this.getSelector());
 					attrComponent(child);
 				}
 			};
