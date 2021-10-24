@@ -56,11 +56,11 @@ export class EventEmitter extends EventTarget
 		origin.addEventListener(this.eventName, callback);
 	}
 
-	emit(origin, data) {
+	emit(data) {
 		if (typeof data !== "object" || !data.detail) {
 			data = { detail: data };
 		}
-		origin.dispatchEvent(new CustomEvent(this.eventName, data));
+		this.component.getElement().dispatchEvent(new CustomEvent(this.eventName, data));
 	}
 }
 
@@ -80,7 +80,7 @@ export class Component extends EventTarget
 	}
 
 	get element() {
-		return this.__element;
+		return this.getElement();
 	}
 
 	get dataset() {
@@ -98,7 +98,7 @@ export class Component extends EventTarget
 	onFirst() {}
 
 	getElement() {
-		return this.element;
+		return this.__element;
 	}
 
 	closestOf(element) {
@@ -108,6 +108,16 @@ export class Component extends EventTarget
 	copy() {
 		const copy = Object.create(this);
 		Object.assign(copy, this);
+		for (let key in copy) {
+			if (typeof copy[key] === "function") {
+				copy[key].bind(copy);
+			}
+			if (typeof copy[key] === "object" && copy[key] instanceof EventEmitter) {
+				copy[key] = Object.create(copy[key]);
+				Object.assign(copy[key], { ...copy[key] });
+				copy[key].setComponent(copy);
+			}
+		}
 		return copy;
 	}
 
@@ -246,6 +256,28 @@ export class Component extends EventTarget
 		return function(...prmt) {
 			return new Function(...args, func).call(caller, ...prmt);
 		};
+	}
+	
+	global(name, value) {
+		const attr = {value};
+		Object.defineProperty(this, name, {
+			get: () => attr.value,
+			set: value => attr.value = value
+		});
+	}
+	
+	attribute(name) {
+		const attr = {
+			set: (element, value) => {
+				element[name] = value;
+			},
+			get: element => {
+				return element[name];
+			}
+		};
+		Object.defineProperty(this, name, {
+			get: () => attr
+		});
 	}
 }
 

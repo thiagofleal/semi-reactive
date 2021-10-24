@@ -453,8 +453,7 @@ export class SelectField extends FormFieldComponent
 	}
 
 	__select(event) {
-		const element = this.getElement();
-		this.onSelect.emit(element, event.target.value);
+		this.onSelect.emit(event.target.value);
 	}
 
 	render() {
