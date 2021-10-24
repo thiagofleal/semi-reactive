@@ -100,7 +100,7 @@ export class Observable
 		});
 	}
 
-	map(transform) {
+	pipe(transform) {
 		return new Observable(observer => {
 			const subscription = this.subscribe({
 				next: value => observer.next(transform(value)),
