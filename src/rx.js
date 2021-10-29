@@ -102,8 +102,19 @@ export class Observable
 
 	pipe(transform) {
 		return new Observable(observer => {
+			const subscription = transform(this).subscribe({
+				next: value => observer.next(value),
+				error: err => observer.error(err),
+				complete: () => observer.complete()
+			});
+			return () => subscription.unsubscribe();
+		});
+	}
+
+	map(pipeable) {
+		return new Observable(observer => {
 			const subscription = this.subscribe({
-				next: value => observer.next(transform(value)),
+				next: value => observer.next(pipeable(value)),
 				error: err => observer.error(err),
 				complete: () => observer.complete()
 			});
@@ -113,7 +124,9 @@ export class Observable
 
 	static from(array) {
 		return new Observable(observer => {
-			array.forEach(value => observer.next(value));
+			for (let key in array) {
+				observer.next(array[key]);
+			}
 			observer.complete();
 		});
 	}
