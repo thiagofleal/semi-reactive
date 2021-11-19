@@ -38,6 +38,7 @@ export class EventEmitter extends EventTarget
 	constructor(eventName, component) {
 		super();
 		this.eventName = eventName;
+		this.__listeners = [];
 		this.setComponent(component);
 	}
 
@@ -53,7 +54,15 @@ export class EventEmitter extends EventTarget
 
 	then(callback) {
 		const origin = this.component.getElement();
+		this.__listeners.push(callback);
 		origin.addEventListener(this.eventName, callback);
+	}
+
+	__associate(component) {
+		this.__listeners.forEach(action => {
+			component.element.removeEventListener(this.eventName, action);
+			component.element.addEventListener(this.eventName, action);
+		});
 	}
 
 	emit(data) {
@@ -146,6 +155,12 @@ export class Component extends EventTarget
 				this.__element = item;
 				this.__dataset = item.dataset;
 				item.innerHTML = this.render(item).trim();
+
+				for (let prop in this) {
+					if (this[prop] instanceof EventEmitter) {
+						this[prop].__associate(this);
+					}
+				}
 				this.onReload ? this.onReload(item, this.__first) : undefined;
 				attrComponent(item);
 			}
