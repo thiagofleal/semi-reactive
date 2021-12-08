@@ -186,4 +186,8 @@ export class Observable
 			})
 		};
 	}
+
+	static fromEventSource(url) {
+		return Observable.fromEvent(new EventSource(url));
+	}
 }
