@@ -243,13 +243,11 @@ export class FormComponent extends Component
 		}
 	}
 
-	update(ctrl, target) {
-		this.__controlNames[ctrl] = target.value;
+	updateField(ctrl, target) {
 		target.value = this.__controlNames[ctrl];
 	}
 
 	updateCheckbox(ctrl, target) {
-		this.__controlNames[ctrl] = target.checked;
 		target.checked = this.__controlNames[ctrl];
 	}
 
