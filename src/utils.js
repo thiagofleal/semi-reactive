@@ -243,14 +243,24 @@ export class FormComponent extends Component
 		}
 	}
 
+	update(ctrl, target) {
+		this.__controlNames[ctrl] = target.value;
+		target.value = this.__controlNames[ctrl];
+	}
+
+	updateCheckbox(ctrl, target) {
+		this.__controlNames[ctrl] = target.checked;
+		target.checked = this.__controlNames[ctrl];
+	}
+
 	__onInput(event, target) {
 		this.__controlNames[target] = event.target.value;
-		event.target.value = this.__controlNames[target]
+		event.target.value = this.__controlNames[target];
 	}
 
 	__onCheckbox(event, target) {
 		this.__controlNames[target] = event.target.checked;
-		event.target.checked = this.__controlNames[target]
+		event.target.checked = this.__controlNames[target];
 	}
 
 	__renderAttributes(attributes) {
@@ -278,7 +288,7 @@ export class FormComponent extends Component
 		const defaultOptions = {
 			type: 'text',
 			fieldControlName: '',
-			events: ['onkeyup', 'onchange'],
+			events: ['oninput'],
 			value: this.__controlNames[options.fieldControlName]
 		};
 
