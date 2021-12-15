@@ -140,8 +140,21 @@ export class Component extends EventTarget
 		return document.querySelectorAll(this.__selector);
 	}
 
+	callBeforeReload() {
+		if (!this.__called_before_reload) {
+			this.beforeReload ? this.beforeReload() : undefined;
+			this.__called_before_reload = true;
+			this.__children.forEach(child => {
+				child.callBeforeReload();
+			});
+		}
+	}
+
 	reload() {
 		if (this.__enabled) {
+			this.callBeforeReload();
+			this.__called_before_reload = false;
+
 			const result = this.__selectAll();
 			const attrComponent = elem => {
 				for (let child of elem.childNodes) {
@@ -161,8 +174,8 @@ export class Component extends EventTarget
 						this[prop].__associate(this);
 					}
 				}
-				this.onReload ? this.onReload(item, this.__first) : undefined;
 				attrComponent(item);
+				this.onReload ? this.onReload(item, this.__first) : undefined;
 			}
 			this.__loadChildren();
 
@@ -174,6 +187,7 @@ export class Component extends EventTarget
 					this.__first = false;
 				}
 			}
+			this.afterReload ? this.afterReload() : undefined;
 		}
 		return this.__enabled;
 	}
