@@ -58,13 +58,6 @@ export class EventEmitter extends EventTarget
 		origin.addEventListener(this.eventName, callback);
 	}
 
-	__associate(component) {
-		this.__listeners.forEach(action => {
-			component.element.removeEventListener(this.eventName, action);
-			component.element.addEventListener(this.eventName, action);
-		});
-	}
-
 	emit(data) {
 		if (typeof data !== "object" || !data.detail) {
 			data = { detail: data };
@@ -105,6 +98,7 @@ export class Component extends EventTarget
 	}
 
 	onFirst() {}
+	onCreate() {}
 
 	getElement() {
 		return this.__element;
@@ -168,17 +162,19 @@ export class Component extends EventTarget
 				this.__element = item;
 				this.__dataset = item.dataset;
 				item.innerHTML = this.render(item).trim();
-
-				for (let prop in this) {
-					if (this[prop] instanceof EventEmitter) {
-						this[prop].__associate(this);
-					}
-				}
 				attrComponent(item);
 				this.onReload ? this.onReload(item, this.__first) : undefined;
 			}
 			this.__loadChildren();
 
+			for (let item of result) {
+				if (!item.__created) {
+					this.__element = item;
+					this.__dataset = item.dataset;
+					this.onCreate(item);
+					item.__created = true;
+				}
+			}
 			if (this.__first) {
 				for (let item of result) {
 					this.__element = item;
