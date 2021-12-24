@@ -143,7 +143,7 @@ export class Observable
 		});
 	}
 
-	fromEventSource(url, name) {
+	static fromEventSource(url, name) {
 		const source = new EventSource(url);
 
 		return new Observable(observer => {
@@ -155,7 +155,7 @@ export class Observable
 				try {
 					source.addEventListener(name, event => observer.next(event));
 				} catch (err) {
-					observer.next(err);
+					observer.error(err);
 				}
 			}
 			source.onerror = err => {
