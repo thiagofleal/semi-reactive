@@ -147,22 +147,19 @@ export class Observable
 		const source = new EventSource(url);
 
 		return new Observable(observer => {
-			if (name === undefined) {
-				source.onmessage = event => {
-					observer.next(event);
-				};
-			} else {
-				try {
+			try {
+				if (name === undefined) {
+					source.onmessage = event => {
+						observer.next(event);
+					};
+				} else {
 					source.addEventListener(name, event => observer.next(event));
-				} catch (err) {
-					observer.error(err);
 				}
+			} catch (err) {
+				observer.error(err);
 			}
 			source.onerror = err => {
 				observer.error(err);
-			};
-			source.onclose = () => {
-				observer.complete();
 			};
 			return () => source.close();
 		}).map(event => {
