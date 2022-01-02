@@ -143,30 +143,30 @@ export class Observable
 		});
 	}
 
-	static fromEventSource(url, name) {
+	static fromEventSource(url, events) {
 		const source = new EventSource(url);
-
+		
+		if (!Array.isArray(events)) {
+			events = [events];
+		}
 		return new Observable(observer => {
 			try {
-				if (name === undefined) {
-					source.onmessage = event => {
-						observer.next(event);
-					};
-				} else {
-					source.addEventListener(name, event => observer.next(event));
-				}
+				events.forEach(event => {
+					source.addEventListener(event, evt => observer.next(evt));
+				});
+				source.onerror = err => {
+					observer.error(err);
+				};
 			} catch (err) {
 				observer.error(err);
 			}
-			source.onerror = err => {
-				observer.error(err);
-			};
 			return () => source.close();
 		}).map(event => {
+			const ret = Object.assign({}, event);
 			if (typeof event.data === "string") {
-				event.data = JSON.parse(event.data);
+				ret.data = JSON.parse(event.data);
 			}
-			return event;
+			return ret;
 		});
 	}
 }
