@@ -143,51 +143,24 @@ export class Observable
 		});
 	}
 
-	static fromEvent(emitter) {
-		return {
-			onMessage: () => new Observable(observer => {
-				let unsubscriber = () => {};
-				try {
-					const onopen = emitter.onopen;
-					const onmessage = emitter.onmessage;
-					const onerror = emitter.onerror;
-					const onclose = emitter.onclose;
-
-					emitter.onopen = data => observer.next(data);
-					emitter.onmessage = data => observer.next(data);
-					emitter.onerror = err => observer.error(err);
-					emitter.onclose = data => {
-						observer.next(data);
-						observer.complete();
-					};
-					
-					unsubscriber = () => {
-						emitter.onopen = onopen;
-						emitter.onmessage = onmessage;
-						emitter.onerror = onerror;
-						emitter.onclose = onclose;
-					};
-				} catch (err) {
+	static fromEventSource(url, events) {
+		const source = new EventSource(url);
+		
+		if (!Array.isArray(events)) {
+			events = [events];
+		}
+		return new Observable(observer => {
+			try {
+				events.forEach(event => {
+					source.addEventListener(event, evt => observer.next(evt));
+				});
+				source.onerror = err => {
 					observer.error(err);
-				}
-				return unsubscriber;
-			}),
-			onEvent: eventName => new Observable(observer => {
-				let unsubscriber = () => {};
-	
-				try {
-					const handler = event => observer.next(event);
-					emitter.addEventListener(eventName, handler);
-					unsubscriber = () => emitter.removeEventListener(eventName, handler);
-				} catch (err) {
-					observer.error(err);
-				}
-				return unsubscriber;
-			})
-		};
-	}
-
-	static fromEventSource(url) {
-		return Observable.fromEvent(new EventSource(url));
+				};
+			} catch (err) {
+				observer.error(err);
+			}
+			return () => source.close();
+		});
 	}
 }
