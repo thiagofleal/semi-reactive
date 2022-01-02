@@ -161,12 +161,6 @@ export class Observable
 				observer.error(err);
 			}
 			return () => source.close();
-		}).map(event => {
-			const ret = Object.assign({}, event);
-			if (typeof event.data === "string") {
-				ret.data = JSON.parse(event.data);
-			}
-			return ret;
 		});
 	}
 }
