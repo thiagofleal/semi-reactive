@@ -108,22 +108,6 @@ export class Component extends EventTarget
 		return element.closest(this.getSelector());
 	}
 
-	copy() {
-		const copy = Object.create(this);
-		Object.assign(copy, this);
-		for (let key in copy) {
-			if (typeof copy[key] === "function") {
-				copy[key].bind(copy);
-			}
-			if (typeof copy[key] === "object" && copy[key] instanceof EventEmitter) {
-				copy[key] = Object.create(copy[key]);
-				Object.assign(copy[key], { ...copy[key] });
-				copy[key].setComponent(copy);
-			}
-		}
-		return copy;
-	}
-
 	show(selector) {
 		this.__selector = selector;
 		this.reload();
@@ -152,8 +136,14 @@ export class Component extends EventTarget
 			const result = this.__selectAll();
 			const attrComponent = elem => {
 				for (let child of elem.childNodes) {
-					child.component = this.copy();
-					child.component.__element = elem.closest(this.getSelector());
+					child._component = this;
+					child._element = elem.closest(this.getSelector());
+					Object.defineProperty(child, "component", {
+						get: () => {
+							this.__element = child._element;
+							return child._component;
+						}
+					})
 					attrComponent(child);
 				}
 			};
@@ -281,14 +271,6 @@ export class Component extends EventTarget
 		return function(...prmt) {
 			return new Function(...args, func).call(caller, ...prmt);
 		};
-	}
-	
-	global(name, value) {
-		const attr = {value};
-		Object.defineProperty(this, name, {
-			get: () => attr.value,
-			set: value => attr.value = value
-		});
 	}
 	
 	attribute(name) {
