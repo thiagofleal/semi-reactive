@@ -56,6 +56,7 @@ export class EventEmitter extends EventTarget
 		const origin = this.component.getElement();
 		this.__listeners.push(callback);
 		origin.addEventListener(this.eventName, callback);
+		return () => origin.removeEventListener(this.eventName, callback);
 	}
 
 	emit(data) {
@@ -285,6 +286,18 @@ export class Component extends EventTarget
 		Object.defineProperty(this, name, {
 			get: () => attr
 		});
+	}
+
+	onEvent(event, callback) {
+		this.addEventListener(event, callback);
+		return () => this.removeEventListener(event, callback);
+	}
+
+	emit(event, data) {
+		if (typeof data !== "object" || !data.detail) {
+			data = { detail: data };
+		}
+		this.dispatchEvent(new CustomEvent(event, data));
 	}
 }
 
