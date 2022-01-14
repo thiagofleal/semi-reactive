@@ -236,21 +236,27 @@ export class FormFieldComponent extends Component
 		Object.defineProperty(this.__controlNames, name, value);
 	}
 
-	setControllers(controls) {
-		this.__controlNames = {};
+	setControllers(controls, append) {
+		if (!append) {
+			this.__controlNames = {};
+		}
 		for (const key in controls) {
 			this.addFieldControl(key, controls[key]);
 		}
 	}
 
-	__onInput(event, target) {
-		this.__controlNames[target] = event.target.value;
-		event.target.value = this.__controlNames[target]
+	__onInput(event, ctrl) {
+		if (event && event.target && event.target.value && ctrl && this.__controlNames[ctrl] !== undefined) {
+			this.__controlNames[ctrl] = event.target.value;
+			event.target.value = this.__controlNames[ctrl];
+		}
 	}
 
-	__onCheckbox(event, target) {
-		this.__controlNames[target] = event.target.checked;
-		event.target.checked = this.__controlNames[target]
+	__onCheckbox(event, ctrl) {
+		if (event && event.target && ctrl && this.__controlNames[ctrl] !== undefined) {
+			this.__controlNames[ctrl] = event.target.checked || false;
+			event.target.checked = this.__controlNames[ctrl] || false;
+		}
 	}
 
 	__renderAttributes(attributes) {
