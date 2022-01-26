@@ -245,17 +245,17 @@ export class FormFieldComponent extends Component
 		}
 	}
 
-	__onInput(event, ctrl) {
-		if (event && event.target && event.target.value && ctrl && this.__controlNames[ctrl] !== undefined) {
-			this.__controlNames[ctrl] = event.target.value;
-			event.target.value = this.__controlNames[ctrl];
+	__onInput(target, ctrl) {
+		if (target && ctrl) {
+			this.__controlNames[ctrl] = target.value || "";
+			target.value = this.__controlNames[ctrl];
 		}
 	}
 
-	__onCheckbox(event, ctrl) {
-		if (event && event.target && ctrl && this.__controlNames[ctrl] !== undefined) {
-			this.__controlNames[ctrl] = event.target.checked || false;
-			event.target.checked = this.__controlNames[ctrl] || false;
+	__onCheckbox(target, ctrl) {
+		if (target && ctrl) {
+			this.__controlNames[ctrl] = target.checked || false;
+			target.checked = this.__controlNames[ctrl];
 		}
 	}
 
@@ -310,7 +310,7 @@ export class InputField extends FormFieldComponent
 		const defaultOptions = {
 			type: 'text',
 			events: ['oninput'],
-			value: this.__controlNames[controller]
+			value: this.__controlNames[controller] || ""
 		};
 
 		for (const key in defaultOptions) {
@@ -327,7 +327,7 @@ export class InputField extends FormFieldComponent
 		for (const event of options.events) {
 			attributes.push({
 				name: event,
-				value: `this.component.__onInput(event, '${controller}')`
+				value: `this.component.__onInput(this, '${controller}')`
 			});
 		}
 		return this.__renderAttributes(attributes);
@@ -402,7 +402,7 @@ export class CheckBox extends FormFieldComponent
 		for (const event of options.events) {
 			attributes.push({
 				name: event,
-				value: `this.component.__onCheckbox(event, '${controller}')`
+				value: `this.component.__onCheckbox(this, '${controller}')`
 			});
 		}
 		return this.__renderAttributes(attributes);
