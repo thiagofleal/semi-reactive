@@ -100,10 +100,21 @@ export class Observable
 		});
 	}
 
-	map(transform) {
+	pipe(transform) {
+		return new Observable(observer => {
+			const subscription = transform(this).subscribe({
+				next: value => observer.next(value),
+				error: err => observer.error(err),
+				complete: () => observer.complete()
+			});
+			return () => subscription.unsubscribe();
+		});
+	}
+
+	map(pipeable) {
 		return new Observable(observer => {
 			const subscription = this.subscribe({
-				next: value => observer.next(transform(value)),
+				next: value => observer.next(pipeable(value)),
 				error: err => observer.error(err),
 				complete: () => observer.complete()
 			});
@@ -113,7 +124,9 @@ export class Observable
 
 	static from(array) {
 		return new Observable(observer => {
-			array.forEach(value => observer.next(value));
+			for (let key in array) {
+				observer.next(array[key]);
+			}
 			observer.complete();
 		});
 	}
@@ -130,12 +143,24 @@ export class Observable
 		});
 	}
 
-	static fromEvent(emitter, eventName) {
+	static fromEventSource(url, events) {
+		const source = new EventSource(url);
+		
+		if (!Array.isArray(events)) {
+			events = [events];
+		}
 		return new Observable(observer => {
-			const handler = event => observer.next(event);
-			
-			emitter.addEventListener(eventName, handler);
-			return () => emitter.removeEventListener(eventName, handler);
+			try {
+				events.forEach(event => {
+					source.addEventListener(event, evt => observer.next(evt));
+				});
+				source.onerror = err => {
+					observer.error(err);
+				};
+			} catch (err) {
+				observer.error(err);
+			}
+			return () => source.close();
 		});
 	}
 }
