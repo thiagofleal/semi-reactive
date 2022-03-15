@@ -28,7 +28,7 @@ To add **semi-reactive** library to project, just use a ```script``` tag, passin
 To create a component, just import and extend the class Component or one of it subclasses
 ```Javascript
 // Import the Component class from "core.js" file
-const { Component } = await SemiReactive.import("core.js");
+import { Component } from "<path-to-semi-reactive>/core.js");
 
 // Create the component from Component class
 export default class MyComponent extends Component {
@@ -53,7 +53,7 @@ export default class MyComponent extends Component {
 To make reactive components, just pass an object with the pairs ```<property-name>: <initial-value>``` to Components' constructor with the observed properties, and the component will be re-renderized always one of it properties change the value.
 
 ```Javascript
-const { Component } = await SemiReactive.import("core.js");
+import { Component } from "<path-to-semi-reactive>/core.js");
 
 export default class MyReactiveComponent extends Component {
   constructor() {
@@ -86,7 +86,7 @@ export default class MyReactiveComponent extends Component {
 To add children into a component, use the ```appendChild(component, selector)``` method
 
 ```Javascript
-const { Component } = await SemiReactive.import("core.js");
+import { Component } from "<path-to-semi-reactive>/core.js");
 
 // The component that will be put into the ParentComponent
 class ChildComponent extends Component {
