@@ -6,14 +6,19 @@ export const modalStyle = Style.createClass(/*css*/`
         top: 0;
         left: 0;
         z-index: 1055;
-        display: none;
         width: 100%;
         height: 100%;
         overflow-x: hidden;
         overflow-y: auto;
         outline: 0;
     }
-  
+    & .modal:not(.show) {
+        display: none;
+    }
+    & .modal.show {
+        display: block;
+    }
+
     & .modal-dialog {
         position: relative;
         width: auto;
@@ -66,7 +71,7 @@ export const modalStyle = Style.createClass(/*css*/`
         border-radius: 0.3rem;
         outline: 0;
     }
-  
+
     & .modal-backdrop {
         position: fixed;
         top: 0;
@@ -97,18 +102,18 @@ export const modalStyle = Style.createClass(/*css*/`
         padding: 0.5rem 0.5rem;
         margin: -0.5rem -0.5rem -0.5rem auto;
     }
-  
+
     & .modal-title {
         margin-bottom: 0;
         line-height: 1.5;
     }
-  
+
     & .modal-body {
         position: relative;
         flex: 1 1 auto;
         padding: 1rem;
     }
-  
+
     & .modal-footer {
         display: flex;
         flex-wrap: wrap;
@@ -123,7 +128,7 @@ export const modalStyle = Style.createClass(/*css*/`
     & .modal-footer > * {
         margin: 0.25rem;
     }
-  
+
     @media (min-width: 576px) {
         & .modal-dialog {
             max-width: 500px;

@@ -1,3 +1,5 @@
+import { Style } from "./style.js";
+
 export class Property
 {
 	get value() {
@@ -45,7 +47,19 @@ export class Component extends EventTarget
 		this.__selector = null;
 		this.__properties = {};
 		this.__parent = undefined;
+		this.__id = this.createId(5);
+		delete this.createId;
 		this.definePropertiesObject(props || {});
+	}
+
+	createId(length) {
+		const chars = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789";
+		let ret = `${this.constructor.name}_`;
+
+		for (let i = 0; i < length; i++) {
+			ret += chars.charAt(Math.ceil(Math.random() * chars.length));
+		}
+		return ret;
 	}
 
 	get element() {
@@ -60,8 +74,16 @@ export class Component extends EventTarget
 		return '';
 	}
 
+	style() {
+		return '';
+	}
+
 	getSelector() {
 		return this.__selector;
+	}
+
+	getId() {
+		return this.__id;
 	}
 
 	onFirst() {}
@@ -82,7 +104,7 @@ export class Component extends EventTarget
 	}
 
 	__selectAll() {
-		return document.querySelectorAll(this.__selector);
+		return document.querySelectorAll(this.getSelector());
 	}
 
 	callBeforeReload() {
@@ -111,6 +133,9 @@ export class Component extends EventTarget
 							return child._component;
 						}
 					})
+					if (child.setAttribute && typeof child.setAttribute === "function") {
+						child.setAttribute("component", this.getId());
+					}
 					attrComponent(child);
 				}
 			};
@@ -122,6 +147,7 @@ export class Component extends EventTarget
 				attrComponent(item);
 				this.onReload ? this.onReload(item, this.__first) : undefined;
 			}
+			Style.create(`${this.getSelector()}[component=${this.getId()}]`, this.style());
 			this.__loadChildren();
 
 			for (let item of result) {
@@ -204,7 +230,7 @@ export class Component extends EventTarget
 		}
 		this.__children.push(child);
 		child.__parent = this;
-		child.show(selector);
+		child.show(`${selector}[component=${this.getId()}]`);
 
 		for (let handler of eventHandlers) {
 			this.addEventListener(handler.on, handler.callback, handler.flag);
@@ -218,7 +244,13 @@ export class Component extends EventTarget
 	}
 
 	pageTitle(title) {
-		document.querySelector('head title').innerHTML = title;
+		let element = document.querySelector('head title');
+
+		if (!element) {
+			element = document.createElement('title');
+			document.head.append(element);
+		}
+		element.innerHTML = title;
 	}
 
 	getAttribute(attr) {
@@ -233,10 +265,10 @@ export class Component extends EventTarget
 		return attributes;
 	}
 
-	getFunctionAttribute(attr, caller, ...args) {
+	getFunctionAttribute(attr, ...args) {
 		const func = this.getAttribute(attr);
 		return function(...prmt) {
-			return new Function(...args, func).call(caller, ...prmt);
+			return new Function(...args, func).call(this.element, ...prmt);
 		};
 	}
 	

@@ -8,13 +8,10 @@ export class ModalComponent extends Component {
         });
         this.onOpen = this.onClose = () => null;
         this.__content = new contentClass(this, ...args);
-    }
-
-    show(selector) {
-        super.show(selector);
+        
         this.appendChild(
             this.__content,
-            `${selector}>.modal>.modal-dialog>.modal-content`
+            `div.modal-content`
         )
     }
 
@@ -48,13 +45,17 @@ export class ModalComponent extends Component {
 
     render() {
         return /*html*/`
-            <div class="${modalStyle}">
-                <div class="modal ${this.getAttribute("modal-class") || ''} ${this.__active ? 'd-block show' : 'd-none'}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="${ modalStyle }">
+                <div class="modal ${this.getAttribute("modal-class") || ''} ${this.__active ? 'show' : ''}" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog ${this.getAttribute("modal-dialog-class") || ''}" role="document">
                         <div class="modal-content ${this.getAttribute("modal-content-class") || ''}"></div>
                     </div>
                 </div>
-                <div class="modal-backdrop fade show ${this.__active ? 'd-block' : 'd-none'}"></div>
+                ${
+                    this.__active
+                    ? /*html*/`<div class="modal-backdrop fade show"></div>`
+                    : ""
+                }
             </div>
 		`;
     }

@@ -5,20 +5,12 @@ var SemiReactive = {
 		return this.script.src;
 	},
 	frameworkPath: function() {
-		return this.scriptFileName().replace("include.js", "src/");
+		return this.scriptFileName().replace("include.js", "/");
 	},
 	import: function(filename) {
 		return require(this.frameworkPath() + filename);
 	}
 };
-
-var link = document.createElement("link");
-
-link.type = "text/css";
-link.rel = "stylesheet";
-link.href = `${SemiReactive.frameworkPath()}css/semi-reactive.css`
-
-document.head.append(link);
 
 var meta = document.createElement("meta");
 
