@@ -147,7 +147,11 @@ export class Component extends EventTarget
 				attrComponent(item);
 				this.onReload ? this.onReload(item, this.__first) : undefined;
 			}
-			Style.create(`${this.getSelector()}[component=${this.getId()}]`, this.style());
+			const selector = this.getSelector();
+			const style = this.style();
+			if (selector && style) {
+				Style.create(selector, style);
+			}
 			this.__loadChildren();
 
 			for (let item of result) {
