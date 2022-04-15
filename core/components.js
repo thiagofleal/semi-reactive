@@ -145,12 +145,14 @@ export class Component extends EventTarget
 				for (let child of elem.childNodes) {
 					child._component = this;
 					child._element = elem.closest(this.getSelector());
-					Object.defineProperty(child, "component", {
-						get: () => {
-							this.__element = child._element;
-							return child._component;
-						}
-					})
+					if (!child.component) {
+						Object.defineProperty(child, "component", {
+							get: () => {
+								this.__element = child._element;
+								return child._component;
+							}
+						});
+					}
 					if (child.setAttribute && typeof child.setAttribute === "function") {
 						child.setAttribute("component", this.getId());
 					}
