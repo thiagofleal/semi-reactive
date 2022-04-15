@@ -124,20 +124,7 @@ export class InputField extends FormFieldComponent
 		if (autocomplete) {
 			options.list = "__auto-complete-" + autocomplete;
 		}
-        return /*html*/`
-			<input ${ this.inputAttributes(options, controller) }>
-			${ autocomplete
-				? /*html*/`
-					<datalist id="${ options.list }">
-						${
-							list.map(option => /*html*/`
-								<option>${ option }</option>
-							`).join('')
-						}
-					</datalist>
-				` : ""
-			}
-		`;
+        return `<input ${this.inputAttributes(options, controller)}>${autocomplete?`<datalist id="${ options.list }">${list.map(option => `<option>${ option }</option>`).join('')}</datalist>`:""}`;
 	}
 }
 
@@ -194,9 +181,7 @@ export class CheckBox extends FormFieldComponent
 				options[key.replace(regex, "")] = attr[key];
 			}
 		}
-		return /*html*/`
-			<input ${ this.inputAttributes(options, controller) }>
-		`;
+		return `<input ${this.inputAttributes(options, controller)}>`;
 	}
 }
 
@@ -253,18 +238,6 @@ export class SelectField extends FormFieldComponent
 			}
 		}
 
-		return /*html*/`
-			<select ${this.__renderAttributes(attributes)} onchange="this.component.__select(event)">
-				${
-					options.map(
-						option => /*html*/`
-							<option value="${ option.value }">
-								${ option.text }
-							</option>
-						`
-					).join('')
-				}
-			</select>
-		`
+		return `<select ${this.__renderAttributes(attributes)} onchange="this.component.__select(event)">${options.map(option => `<option value="${ option.value }">${option.text}</option>`).join('')}</select>`
 	}
 }
