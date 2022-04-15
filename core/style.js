@@ -19,7 +19,7 @@ export class Style
 			style.id = id;
 			document.head.append(style);
 		}
-		style.innerHTML += css.trim().split('&').map(element => {
+		style.innerHTML = css.trim().split('&').map(element => {
 			if (element && element.length) {
 				return (selector + element).trim();
 			}
