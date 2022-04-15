@@ -1,5 +1,12 @@
 import { Style } from "./style.js";
 
+function createElement(str) {
+	var elem = document.createElement('div');
+	elem.innerHTML = str;
+
+	return elem;
+}
+
 export class Property
 {
 	get value() {
@@ -48,6 +55,7 @@ export class Component extends EventTarget
 		this.__properties = {};
 		this.__parent = undefined;
 		this.__id = this.createId(5);
+		this.__childNodes = {};
 		delete this.createId;
 		this.definePropertiesObject(props || {});
 	}
@@ -68,6 +76,10 @@ export class Component extends EventTarget
 
 	get dataset() {
 		return this.__dataset;
+	}
+
+	get children() {
+		return this.__childNodes[this.element];
 	}
 
 	render() {
@@ -117,6 +129,12 @@ export class Component extends EventTarget
 		}
 	}
 
+	loadChildNodes() {
+		for (const item of this.__selectAll()) {
+			this.__childNodes[item] = createElement(item.innerHTML);
+		}
+	}
+
 	reload() {
 		if (this.__enabled) {
 			this.callBeforeReload();
@@ -143,6 +161,9 @@ export class Component extends EventTarget
 			for (let item of result) {
 				this.__element = item;
 				this.__dataset = item.dataset;
+				if (!item.__created) {
+					this.loadChildNodes();
+				}
 				item.innerHTML = this.render(item).trim();
 				attrComponent(item);
 				this.onReload ? this.onReload(item, this.__first) : undefined;
