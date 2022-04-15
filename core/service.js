@@ -11,10 +11,18 @@ export class Injectable
         
         if (ref) {
             ref.value = value;
-            value.notify("inject-set");
+            value.notify({
+                name: "inject-set",
+                group: "injection",
+                from: Injectable
+            });
         } else {
             Injectable.services.push({ classRef, value });
-            value.notify("inject-create");
+            value.notify({
+                name: "inject-create",
+                group: "injection",
+                from: Injectable
+            });
         }
     }
 
@@ -43,7 +51,7 @@ export class Service
         this.clients.forEach(client => client.next(event));
     }
 
-    notifications() {
+    events() {
         return new Observable(observer => {
             this.clients.push(observer);
 
