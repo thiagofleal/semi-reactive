@@ -1,45 +1,10 @@
+import { Property, PropertySet } from "./properties.js";
 import { Style } from "./style.js";
 
 function createElement(str) {
-	var elem = document.createElement('div');
+	const elem = document.createElement('div');
 	elem.innerHTML = str;
-
 	return elem;
-}
-
-export class Property
-{
-	get value() {
-		return this.__value;
-	}
-
-	set value(value) {
-		this.__value = value;
-		this.change(value);
-	}
-
-	constructor(value, component) {
-		this.change = () => {};
-		this.setComponent(component);
-		this.__value = value;
-	}
-
-	setComponent(component) {
-		if (component !== null && component !== undefined) {
-			this.change = () => component.reload();
-		}
-	}
-
-	associate(property) {
-		if (property && property instanceof Property) {
-			property.value = this.value;
-			const change = this.change;
-			this.change = () => {
-				change();
-				property.value = this.value;
-			};
-		}
-	}
 }
 
 export class Component extends EventTarget
@@ -244,10 +209,29 @@ export class Component extends EventTarget
 		}
 		src.associate(property);
 	}
-
+	
 	associateProperties(properties) {
 		for (const key in properties) {
 			this.associateProperty(key, properties[key]);
+		}
+	}
+
+	addPropertySet(propertySet, ...properties) {
+		for (const name of properties) {
+			const property = this.getProperty(name);
+			propertySet.set(name, property);
+		}
+	}
+
+	createPropertySet(...properties) {
+		const ret = new PropertySet();
+		this.addPropertySet(ret, ...properties);
+		return ret;
+	}
+
+	usePropertySet(propertySet) {
+		for (const item of propertySet.getAll()) {
+			this.associateProperty(item.key, item.property);
 		}
 	}
 
@@ -396,5 +380,40 @@ export class Switch extends Component
 		if (selected) {
 			selected.reload();
 		}
+	}
+}
+
+export class TextComponent extends Component
+{
+	constructor(props) {
+		if (props === undefined || props === null) {
+			props = {};
+		}
+		props.default = "";
+		super(props);
+	}
+
+	getText(property) {
+		if (property === undefined || property === null) {
+			property = "default";
+		}
+		return this[property];
+	}
+
+	setText(property, text) {
+		if (text === undefined || text === null) {
+			text = property;
+			property = "default";
+		}
+		this[property] = '' + text;
+	}
+
+	setControls(controls) {
+		this.definePropertiesObject(controls);
+	}
+
+	render() {
+		const property = this.getAttribute("control") || "default";
+		return this[property];
 	}
 }
