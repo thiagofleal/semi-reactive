@@ -63,12 +63,12 @@ export class Request
 		return false;
 	}
 
-	async deleteResponse(url, body, args) {
-		return await this.request(url, "DELETE", body, args);
+	async deleteResponse(url, args) {
+		return await this.request(url, "DELETE", null, args);
 	}
 
-	async delete(url, body, args) {
-		const response = await this.deleteResponse(url, body, args);
+	async delete(url, args) {
+		const response = await this.deleteResponse(url, args);
 		
 		if (response !== false) {
 			return await response.json();
