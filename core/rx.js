@@ -100,21 +100,10 @@ export class Observable
 		});
 	}
 
-	pipe(transform) {
-		return new Observable(observer => {
-			const subscription = transform(this).subscribe({
-				next: value => observer.next(value),
-				error: err => observer.error(err),
-				complete: () => observer.complete()
-			});
-			return () => subscription.unsubscribe();
-		});
-	}
-
-	map(pipeable) {
+	map(transform) {
 		return new Observable(observer => {
 			const subscription = this.subscribe({
-				next: value => observer.next(pipeable(value)),
+				next: value => observer.next(transform(value)),
 				error: err => observer.error(err),
 				complete: () => observer.complete()
 			});
@@ -166,24 +155,12 @@ export class Observable
 		});
 	}
 
-	static fromEventSource(url, events) {
-		const source = new EventSource(url);
-		
-		if (!Array.isArray(events)) {
-			events = [events];
-		}
+	static fromEvent(emitter, eventName) {
 		return new Observable(observer => {
-			try {
-				events.forEach(event => {
-					source.addEventListener(event, evt => observer.next(evt));
-				});
-				source.onerror = err => {
-					observer.error(err);
-				};
-			} catch (err) {
-				observer.error(err);
-			}
-			return () => source.close();
+			const handler = event => observer.next(event);
+			
+			emitter.addEventListener(eventName, handler);
+			return () => emitter.removeEventListener(eventName, handler);
 		});
 	}
 }
