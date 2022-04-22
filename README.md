@@ -3,8 +3,7 @@
 Semi-reactive is a **pure EcmaScript** implementation of **reactive components**. With it, you can easily create reactive components without any compilation or pre-processor process, just write and run on the browser.
 ###### Features and tools
 - Create components with pure EcmaScript, no need to use Babel or compile
-- Auto add Bootstrap 4, no need to do it manualy
-- Easily create modals, reactive-forms and data-tables
+- Easily create modals, reactive-forms
 - Small implementation of switches and routers
 - Small implementation of observables
 
@@ -12,16 +11,28 @@ Semi-reactive is a **pure EcmaScript** implementation of **reactive components**
 #### Adding semi-reactive to project
 To add **semi-reactive** library to project, just use a ```script``` tag, passing the ```src``` property as the path to *semi-reactive/include.js* file and the properties ```component-file``` and ```target```, that are, respectively, the path to root component file (with ```export default```) and the selector of HTML element to put the component.
 
+###### index.html
 ```HTML
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="<path-to-library>/include.js" component-file="<root-component-file-path>" target="#app"></script>
+    <script type="module" src="<path>/main.js"></script>
   </head>
   <body>
     <div id="app"></div>
   </body>
 </html>
+```
+
+###### main.js
+```Javascript
+import { SemiReactive } from '<semi-reactive-path>/main.js';
+import AppComponent from '<components-path>/app-component.js';
+
+SemiReactive.start({
+  component: AppComponent,
+  target: '#app'
+});
 ```
 
 #### Creating a component
