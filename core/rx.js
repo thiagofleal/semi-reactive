@@ -122,12 +122,35 @@ export class Observable
 		});
 	}
 
-	static from(array) {
+	filter(condition) {
 		return new Observable(observer => {
-			for (let key in array) {
-				observer.next(array[key]);
+			const subscription = this.subscribe({
+				next: value => {
+					if (condition(value)) {
+						observer.next(value);
+					}
+				},
+				error: err => observer.error(err),
+				complete: () => observer.complete()
+			});
+			return () => subscription.unsubscribe();
+		});
+	}
+
+	static from(src) {
+		return new Observable(observer => {
+			if (Array.isArray(src)) {
+				for (let key in src) {
+					observer.next(src[key]);
+				}
+				observer.complete();
 			}
-			observer.complete();
+			if (src instanceof Promise) {
+				src.then(value => {
+					observer.next(value);
+					observer.complete();
+				}).catch(err => observer.error(err));
+			}
 		});
 	}
 
