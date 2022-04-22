@@ -37,3 +37,33 @@ export class Style
 		return name;
 	}
 }
+
+export class StyledComponent
+{
+	constructor() {
+		this.__selector = "";
+	}
+
+	show(selector) {
+		this.__selector = selector;
+		this.reload();
+	}
+
+	getSelector() {
+		return this.__selector;
+	}
+
+	style() {
+		return '';
+	}
+
+	callBeforeReload() {}
+
+	reload() {
+		const selector = this.getSelector();
+		const style = this.style();
+		if (selector && style) {
+			Style.create(selector, style);
+		}
+	}
+}
