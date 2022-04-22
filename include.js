@@ -7,35 +7,22 @@ var SemiReactive = {
 	frameworkPath: function() {
 		return this.scriptFileName().replace("include.js", "src/");
 	},
-	import: function(filename) {
-		return require(this.frameworkPath() + filename);
+	import: async function(filename) {
+		return await import(this.frameworkPath() + filename);
 	}
 };
 
-var link = document.createElement("link");
+document.writeln(
+	/*html*/`<link type="text/css" rel="stylesheet" href="${ SemiReactive.frameworkPath() }css/semi-reactive.css">`
+);
+document.writeln(
+	/*html*/`<meta name="viewport" content="width=device-width, initial-scale=1.0">`
+);
 
-link.type = "text/css";
-link.rel = "stylesheet";
-link.href = `${SemiReactive.frameworkPath()}css/semi-reactive.css`
-
-document.head.append(link);
-
-var meta = document.createElement("meta");
-
-meta.name = "viewport";
-meta.content = "width=device-width, initial-scale=1.0";
-
-document.head.append(meta);
-
-var script = document.createElement("script");
-
-script.type = "module";
-script.innerHTML = `
-	import("${SemiReactive.script.getAttribute('component-file')}").then(module => {
-		const construct = module.default;
+document.writeln(
+	/*html*/`<script type="module">
+		const construct = (await import("${ SemiReactive.script.getAttribute('component-file') }")).default;
 		const component = new construct();
-		component.show("${SemiReactive.script.getAttribute('target')}");
-	});
-`;
-
-document.head.append(script);
+		component.show("${ SemiReactive.script.getAttribute('target') }");
+	</script>`
+);
