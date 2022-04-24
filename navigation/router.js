@@ -1,4 +1,4 @@
-import { Switch } from "./components.js";
+import { Switch } from "../core/components.js";
 
 export class Router extends Switch
 {
