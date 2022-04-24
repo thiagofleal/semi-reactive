@@ -174,4 +174,25 @@ export class Observable
 			return () => emitter.removeEventListener(eventName, handler);
 		});
 	}
+
+	static fromEventSource(url, events) {
+		const source = new EventSource(url);
+		
+		if (!Array.isArray(events)) {
+			events = [events];
+		}
+		return new Observable(observer => {
+			try {
+				events.forEach(event => {
+					source.addEventListener(event, evt => observer.next(evt));
+				});
+				source.onerror = err => {
+					observer.error(err);
+				};
+			} catch (err) {
+				observer.error(err);
+			}
+			return () => source.close();
+		});
+	}
 }
