@@ -100,6 +100,17 @@ export class Observable
 		});
 	}
 
+	pipe(transform) {
+		return new Observable(observer => {
+			const subscription = transform(this).subscribe({
+				next: value => observer.next(value),
+				error: err => observer.error(err),
+				complete: () => observer.complete()
+			});
+			return () => subscription.unsubscribe();
+		});
+	}
+
 	map(transform) {
 		return new Observable(observer => {
 			const subscription = this.subscribe({
