@@ -3,6 +3,7 @@ import { Service } from '../../semi-reactive/core/service.js';
 export class Request extends Service
 {
 	constructor(beforeFetch, catchFetchReturn) {
+		super();
 		this.__beforeFetch = beforeFetch ? beforeFetch : () => {};
 		this.__catchFetchReturn = catchFetchReturn ? catchFetchReturn : () => true;
 	}
