@@ -52,3 +52,39 @@ export class ModalComponent extends Component {
         return `<div class="modal ${this.getAttribute("modal-class") || ''} ${this.__active ? 'show' : ''}" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog ${this.getAttribute("modal-dialog-class") || ''}" role="document"><div class="modal-content ${this.getAttribute("modal-content-class") || ''}">${this.children.innerHTML}</div></div></div>${this.__active?`<div class="modal-backdrop fade show"></div>`: ""}`;
     }
 }
+
+export class ModalContainer extends Component {
+    constructor(componentClass, ...args) {
+        super();
+        this.modal = new ModalComponent();
+        this.content = new componentClass(this, ...args);
+        this.appendChild(this.modal, "modal-component");
+        this.modal.appendChild(this.content, "modal-content");
+    }
+
+    open() {
+        this.modal.open();
+    }
+
+    close() {
+        this.modal.close();
+    }
+
+    setOnOpen(callback) {
+        this.modal.setOnOpen(callback);
+    }
+
+    setOnClose(callback) {
+        this.modal.setOnClose(callback);
+    }
+
+    register(fields) {
+        for (const key in fields) {
+            this[key] = fields[key];
+        }
+    }
+
+    render() {
+        return `<modal-component><modal-content></modal-content></modal-component>`;
+    }
+}
