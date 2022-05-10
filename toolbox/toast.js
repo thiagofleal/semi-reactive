@@ -1,6 +1,6 @@
 import { Component } from "../core/components.js";
 
-export default class Toast extends Component
+export class Toast extends Component
 {
     constructor() {
         super();
