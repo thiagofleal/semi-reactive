@@ -1,5 +1,5 @@
 import { Component } from '../core/components.js';
-import { EventEmitter } from '../core/tools.js';
+import { EventEmitter } from '../core/events.js';
 
 export class FormFieldComponent extends Component
 {
