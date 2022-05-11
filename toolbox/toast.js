@@ -1,5 +1,9 @@
 import { Component } from "../core/components.js";
 
+function sleep(time) {
+    return new Promise(r => setTimeout(r, time));
+}
+
 export class Toast extends Component
 {
     constructor() {
@@ -19,7 +23,7 @@ export class Toast extends Component
             toast.innerHTML = message;
             const classes = `${toast.className || ""}`.split(' ');
             toast.className = [...classes, (css_class || ""), "show"].join(' ');
-            await new Promise(r => setTimeout(r, this.time));
+            await sleep(this.time);
             toast.className = classes.join(' ');
             this.showToast = true;
         }
