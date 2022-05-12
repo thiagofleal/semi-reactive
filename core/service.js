@@ -1,4 +1,4 @@
-import { Observable } from "./rx.js"
+import { Subject } from "./rx.js"
 
 export class Injectable
 {
@@ -40,7 +40,7 @@ export class Injectable
 export class Service
 {
     constructor() {
-        this.clients = [];
+        this.events$ = new Subject();
     }
 
     onRegister() {}
@@ -48,20 +48,10 @@ export class Service
     onGet() {}
 
     notify(event) {
-        this.clients.forEach(client => client.next(event));
+        this.events$.next(event);
     }
 
     events() {
-        return new Observable(observer => {
-            this.clients.push(observer);
-
-            return () => {
-                const index = this.clients.indexOf(observer);
-
-                if (index !== -1) {
-                    this.clients.splice(index, 1);
-                }
-            };
-        });
+        return this.events$;
     }
 }
