@@ -9,8 +9,7 @@ Semi-reactive is a **pure EcmaScript** implementation of **reactive components**
 
 #
 #### Adding semi-reactive to project
-To add **semi-reactive** library to project, just use a ```script``` tag, passing the ```src``` property as the path to *semi-reactive/include.js* file and the properties ```component-file``` and ```target```, that are, respectively, the path to root component file (with ```export default```) and the selector of HTML element to put the component.
-
+To add **semi-reactive** library to project, just use a ```script``` tag, with "type" attribute as **"module"**, passing the ```src``` property as the path to the main file, where is imported the ```SemiReactive``` static class to invoke the ```start``` method, with an object that contains the root component as ```component``` key and the HTM selector to render as ```target``` key.
 ###### index.html
 ```HTML
 <!DOCTYPE html>
@@ -39,7 +38,7 @@ SemiReactive.start({
 To create a component, just import and extend the class Component or one of it subclasses
 ```Javascript
 // Import the Component class from "core.js" file
-const { Component } = await SemiReactive.import("core.js");
+import { Component } from "<path>/core.js";
 
 // Create the component from Component class
 export default class MyComponent extends Component {
@@ -64,7 +63,7 @@ export default class MyComponent extends Component {
 To make reactive components, just pass an object with the pairs ```<property-name>: <initial-value>``` to Components' constructor with the observed properties, and the component will be re-renderized always one of it properties change the value.
 
 ```Javascript
-const { Component } = await SemiReactive.import("core.js");
+import { Component } from "<path>/core.js";
 
 export default class MyReactiveComponent extends Component {
   constructor() {
@@ -97,7 +96,7 @@ export default class MyReactiveComponent extends Component {
 To add children into a component, use the ```appendChild(component, selector)``` method
 
 ```Javascript
-const { Component } = await SemiReactive.import("core.js");
+import { Component } from "<path>/core.js";
 
 // The component that will be put into the ParentComponent
 class ChildComponent extends Component {
