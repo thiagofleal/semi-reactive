@@ -1,4 +1,4 @@
-import { Observable } from "./rx.js";
+import { Subject } from "./rx.js";
 
 export class Property
 {
@@ -8,33 +8,25 @@ export class Property
 
 	set value(value) {
 		this.__value = value;
-		this.__observers.forEach(element => element.next(value));
-		this.change(value);
+		this.value$.next(value);
 	}
 
 	valueChanges() {
-		return new Observable(observer => {
-			this.__observers.push(observer);
-			return () => {
-				const index = this.__observers.indexOf(observer);
-				if (index >= 0) {
-					this.__observers.splice(index, 1);
-				}
-			};
-		});
-		
+		return this.value$;
 	}
 
 	constructor(value, component) {
-		this.__observers = [];
-		this.change = () => {};
+		this.value$ = new Subject();
 		this.setComponent(component);
 		this.__value = value;
+		this.value$.subscribe(() => this.change());
 	}
 
 	setComponent(component) {
 		if (component !== null && component !== undefined) {
 			this.change = () => component.reload();
+		} else {
+			this.change = () => {};
 		}
 	}
 

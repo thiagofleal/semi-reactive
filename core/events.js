@@ -1,11 +1,11 @@
 import { Component } from "./components.js";
+import { Observable } from "./rx.js";
 
 export class EventEmitter extends EventTarget
 {
 	constructor(eventName, component) {
 		super();
 		this.eventName = eventName;
-		this.__listeners = [];
 		this.setComponent(component);
 	}
 
@@ -21,7 +21,6 @@ export class EventEmitter extends EventTarget
 
 	then(callback) {
 		const origin = this.component.getElement();
-		this.__listeners.push(callback);
 		origin.addEventListener(this.eventName, callback);
 		return () => origin.removeEventListener(this.eventName, callback);
 	}
@@ -31,5 +30,14 @@ export class EventEmitter extends EventTarget
 			data = { detail: data };
 		}
 		this.component.getElement().dispatchEvent(new CustomEvent(this.eventName, data));
+	}
+
+	observe() {
+		return new Observable(observer => {
+			const origin = this.component.getElement();
+			const callback = event => observer.next(event);
+			origin.addEventListener(this.eventName, callback);
+			return () => origin.removeEventListener(this.eventName, callback);
+		});
 	}
 }
