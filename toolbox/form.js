@@ -174,7 +174,7 @@ export class CheckBox extends FormFieldComponent
         const attr = this.getAllAttributes();
 		const controller = this.getAttribute("controller");
 		const options = {};
-		const regex = /^input-/i;
+		const regex = /^checkbox-/i;
 		
 		for (let key in attr) {
 			if (regex.test(key)) {
