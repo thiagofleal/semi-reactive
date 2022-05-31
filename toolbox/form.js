@@ -228,7 +228,6 @@ export class SelectField extends FormFieldComponent
 
 
 		const items = document.querySelectorAll(`${this.getSelector()}[options=${property}] select`);
-		console.log(items);
 
 		for (const item of items) {
 			item.innerHTML = options.map(option => `<option value="${ option.value }">${option.text}</option>`).join('');
