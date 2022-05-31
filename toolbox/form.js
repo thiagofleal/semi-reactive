@@ -11,6 +11,17 @@ export class FormFieldComponent extends Component
 		Object.defineProperty(this.__controlNames, name, value);
 	}
 
+	setValue(controller, value) {
+		const items = document.querySelectorAll(`${this.getSelector()}[controller=${controller}] input`);
+
+		for (const item of items) {
+			if (this.__controlNames[controller] !== undefined) {
+				this.__controlNames[controller] = value;
+			}
+			item.value = value;
+		}
+	}
+
 	setControllers(controls, append) {
 		if (!append) {
 			this.__controlNames = {};
@@ -79,6 +90,15 @@ export class InputField extends FormFieldComponent
 		}
 	}
 
+	updateAutocomplete(autocomplete) {
+		const list = this.__autocomplete[autocomplete];
+		const items = document.querySelectorAll(`${this.getSelector()} #__auto-complete-${autocomplete}`);
+
+		for (const item of items) {
+			item.innerHTML = list.map(option => `<option>${ option }</option>`).join('');
+		}
+	}
+
 	inputAttributes(options, controller) {
 		const attributes = [];
 
@@ -133,12 +153,6 @@ export class CheckBox extends FormFieldComponent
 	constructor(controls) {
 		super();
 		this.setControllers(controls);
-	}
-
-	setAutocomplete(controls) {
-		for (const key in controls) {
-			this.addAutocomplete(key, controls[key]);
-		}
 	}
 
 	inputAttributes(options, controller) {
@@ -201,20 +215,32 @@ export class SelectField extends FormFieldComponent
 		return this[property];
 	}
 
-	setOptions(property, text) {
+	setOption(property, text, value) {
 		if (text === undefined || text === null) {
 			text = property;
 			property = "default";
 		}
-		this[property] = '' + text;
+		if (value === undefined) {
+			value = text;
+		}
+		const options = this[property] || [];
+		options.push({ value, text });
+
+
+		const items = document.querySelectorAll(`${this.getSelector()}[options=${property}] select`);
+		console.log(items);
+
+		for (const item of items) {
+			item.innerHTML = options.map(option => `<option value="${ option.value }">${option.text}</option>`).join('');
+		}
 	}
 
 	setControls(controls) {
 		this.definePropertiesObject(controls);
 	}
 
-	onFirst(element) {
-		const handler = this.getFunctionAttribute("select", element, "event");
+	onFirst() {
+		const handler = this.getFunctionAttribute("select", "event");
 		this.onSelect.then(handler);
 	}
 
@@ -224,7 +250,7 @@ export class SelectField extends FormFieldComponent
 
 	render() {
 		const control = this.getAttribute("options");
-		const options = this[control];
+		const options = this[control] || [];
 		const allAttr = this.getAllAttributes();
 		const attributes = [];
 		const regex = /^select-/i;
@@ -237,7 +263,6 @@ export class SelectField extends FormFieldComponent
 				});
 			}
 		}
-
 		return `<select ${this.__renderAttributes(attributes)} onchange="this.component.__select(event)">${options.map(option => `<option value="${ option.value }">${option.text}</option>`).join('')}</select>`
 	}
 }
