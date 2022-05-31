@@ -14,10 +14,10 @@ export class FormFieldComponent extends Component
 	setValue(controller, value) {
 		const items = document.querySelectorAll(`${this.getSelector()}[controller=${controller}] input`);
 
+		if (this.__controlNames[controller] !== undefined) {
+			this.__controlNames[controller] = value;
+		}
 		for (const item of items) {
-			if (this.__controlNames[controller] !== undefined) {
-				this.__controlNames[controller] = value;
-			}
 			item.value = value;
 		}
 	}
