@@ -1,4 +1,4 @@
-import { Component } from '../core/components.js';
+import { Component, getAllAttributesFrom } from '../core/components.js';
 import { EventEmitter } from '../core/events.js';
 
 export class FormFieldComponent extends Component
@@ -14,10 +14,10 @@ export class FormFieldComponent extends Component
 	setValue(controller, value) {
 		const items = document.querySelectorAll(`${this.getSelector()}[controller=${controller}] input`);
 
-		if (this.__controlNames[controller] !== undefined) {
-			this.__controlNames[controller] = value;
-		}
 		for (const item of items) {
+			if (this.__controlNames[controller] !== undefined) {
+				this.__controlNames[controller] = value;
+			}
 			item.value = value;
 		}
 	}
@@ -79,7 +79,7 @@ export class InputField extends FormFieldComponent
 		this.__autocomplete = {};
 		this.setControllers(controls);
 	}
-	
+
 	addAutocomplete(name, get) {
 		Object.defineProperty(this.__autocomplete, name, { get });
 	}
@@ -105,7 +105,7 @@ export class InputField extends FormFieldComponent
 		const defaultOptions = {
 			type: 'text',
 			events: ['oninput'],
-			value: this.__controlNames[controller] || ""
+			value: controller ? this.__controlNames[controller] || "" : ""
 		};
 
 		for (const key in defaultOptions) {
@@ -119,32 +119,51 @@ export class InputField extends FormFieldComponent
 				value: options[key]
 			});
 		}
-		for (const event of options.events) {
-			attributes.push({
-				name: event,
-				value: `this.component.__onInput(this, '${controller}')`
-			});
+		if (controller) {
+			for (const event of options.events) {
+				attributes.push({
+					name: event,
+					value: `this.component.__onInput(this, '${controller}')`
+				});
+			}
 		}
 		return this.__renderAttributes(attributes);
 	}
 
-	render() {
-        const attr = this.getAllAttributes();
-		const controller = this.getAttribute("controller");
-		const options = {};
-		const regex = /^input-/i;
-		const autocomplete = this.getAttribute("autocomplete");
-		const list = this.__autocomplete[autocomplete];
+	style() {
+		return /*css*/`
+			& {
+				display: block;
+			}
+		`;
+	}
 
-		for (let key in attr) {
-			if (regex.test(key)) {
-				options[key.replace(regex, "")] = attr[key];
+	render() {
+		const controller = this.getAttribute("controller");
+		const autocomplete = this.getAttribute("autocomplete");
+		const list = autocomplete ? this.__autocomplete[autocomplete] : [];
+		const options = {};
+
+		const input = this.children.querySelector("input");
+		const label = this.children.querySelector("label");
+		let labelValue = "";
+
+		if (input) {
+			const attr = getAllAttributesFrom(input);
+
+			for (let key in attr) {
+				options[key] = attr[key];
+			}
+			if (autocomplete) {
+				options.list = "__auto-complete-" + autocomplete;
 			}
 		}
-		if (autocomplete) {
-			options.list = "__auto-complete-" + autocomplete;
+		if (label) {
+			const attr = getAllAttributesFrom(label);
+			let attributes = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
+			labelValue = `<label ${attributes}>${label.innerHTML}</label>`;
 		}
-        return `<input ${this.inputAttributes(options, controller)}>${autocomplete?`<datalist id="${ options.list }">${list.map(option => `<option>${ option }</option>`).join('')}</datalist>`:""}`;
+		return `${labelValue}<input ${this.inputAttributes(options, controller)}>${autocomplete?`<datalist id="${ options.list }">${list.map(option => `<option>${ option }</option>`).join('')}</datalist>`:""}`;
 	}
 }
 
@@ -155,7 +174,7 @@ export class CheckBox extends FormFieldComponent
 		this.setControllers(controls);
 	}
 
-	inputAttributes(options, controller) {
+	checkboxAttributes(options, controller) {
 		const attributes = [];
 
 		const defaultOptions = {
@@ -185,17 +204,25 @@ export class CheckBox extends FormFieldComponent
 	}
 
 	render() {
-        const attr = this.getAllAttributes();
 		const controller = this.getAttribute("controller");
+		const input = this.children.querySelector("input");
+		const label = this.children.querySelector("label");
 		const options = {};
-		const regex = /^checkbox-/i;
-		
-		for (let key in attr) {
-			if (regex.test(key)) {
-				options[key.replace(regex, "")] = attr[key];
+		let labelValue = "";
+
+		if (input) {
+			const attr = getAllAttributesFrom(input);
+
+			for (let key in attr) {
+				options[key] = attr[key];
 			}
 		}
-		return `<input ${this.inputAttributes(options, controller)}>`;
+		if (label) {
+			const attr = getAllAttributesFrom(label);
+			let attributes = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
+			labelValue = `<label ${attributes}>${label.innerHTML}</label>`;
+		}
+		return `<input ${this.checkboxAttributes(options, controller)}>${labelValue}`;
 	}
 }
 
@@ -226,7 +253,6 @@ export class SelectField extends FormFieldComponent
 		const options = this[property] || [];
 		options.push({ value, text });
 
-
 		const items = document.querySelectorAll(`${this.getSelector()}[options=${property}] select`);
 
 		for (const item of items) {
@@ -247,21 +273,42 @@ export class SelectField extends FormFieldComponent
 		this.onSelect.emit(event.target.value);
 	}
 
+	selectAttributes(options) {
+		const attributes = [];
+
+		for (const key in options) {
+			attributes.push({
+				name: key,
+				value: options[key]
+			});
+		}
+		attributes.push({
+			name: "onchange",
+			value: `this.component.__select(event)`
+		});
+		return this.__renderAttributes(attributes);
+	}
+
 	render() {
 		const control = this.getAttribute("options");
+		const select = this.children.querySelector("select");
+		const label = this.children.querySelector("label");
 		const options = this[control] || [];
-		const allAttr = this.getAllAttributes();
-		const attributes = [];
-		const regex = /^select-/i;
+		const attributes = {};
+		let labelValue = "";
 
-		for (let key in allAttr) {
-			if (regex.test(key)) {
-				attributes.push({
-					name: key.replace(regex, ""),
-					value: allAttr[key]
-				});
+		if (select) {
+			const attr = getAllAttributesFrom(select);
+
+			for (let key in attr) {
+				attributes[key] = attr[key];
 			}
 		}
-		return `<select ${this.__renderAttributes(attributes)} onchange="this.component.__select(event)">${options.map(option => `<option value="${ option.value }">${option.text}</option>`).join('')}</select>`
+		if (label) {
+			const attr = getAllAttributesFrom(label);
+			let attributes = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
+			labelValue = `<label ${attributes}>${label.innerHTML}</label>`;
+		}
+		return `${labelValue}<select ${this.selectAttributes(attributes)}>${options.map(option => `<option value="${ option.value }">${option.text}</option>`).join('')}</select>`
 	}
 }
