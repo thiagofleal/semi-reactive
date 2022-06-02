@@ -7,6 +7,14 @@ function createElement(str) {
 	return elem;
 }
 
+export function getAllAttributesFrom(element) {
+	const attributes = {};
+	Array.from(element.attributes).forEach(attr => {
+		attributes[attr.nodeName] = attr.nodeValue;
+	});
+	return attributes;
+}
+
 export class Component extends EventTarget
 {
 	constructor(props, enabled) {
@@ -94,10 +102,8 @@ export class Component extends EventTarget
 		}
 	}
 
-	loadChildNodes() {
-		for (const item of this.__selectAll()) {
-			this.__childNodes[item] = createElement(item.innerHTML);
-		}
+	loadChildNode(item) {
+		this.__childNodes[item] = createElement(item.innerHTML);
 	}
 
 	reload() {
@@ -129,7 +135,7 @@ export class Component extends EventTarget
 				this.__element = item;
 				this.__dataset = item.dataset;
 				if (!item.__created) {
-					this.loadChildNodes();
+					this.loadChildNode(item);
 				}
 				item.innerHTML = this.render(item).trim();
 				attrComponent(item);
@@ -269,11 +275,7 @@ export class Component extends EventTarget
 	}
 
 	getAllAttributes() {
-		const attributes = {};
-		Array.from(this.element.attributes).forEach(
-			attr => attributes[attr.nodeName] = attr.nodeValue
-		);
-		return attributes;
+		return getAllAttributesFrom(this.element);
 	}
 
 	getFunctionAttribute(attr, ...args) {
