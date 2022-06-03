@@ -228,11 +228,15 @@ export class CheckBox extends FormFieldComponent
 
 export class SelectField extends FormFieldComponent
 {
-	constructor() {
+	constructor(options) {
 		super({
 			default: []
 		});
 		this.onSelect = new EventEmitter("select", this);
+
+		if (options !== undefined) {
+			this.setOptions(options);
+		}
 	}
 
 	getOptions(property) {
@@ -260,11 +264,11 @@ export class SelectField extends FormFieldComponent
 		}
 	}
 
-	setControls(controls) {
-		this.definePropertiesObject(controls);
+	setOptions(options) {
+		this.definePropertiesObject(options);
 	}
 
-	onFirst() {
+	onCreate() {
 		const handler = this.getFunctionAttribute("select", "event");
 		this.onSelect.then(handler);
 	}
