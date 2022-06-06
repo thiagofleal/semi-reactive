@@ -88,7 +88,7 @@ export class Component extends EventTarget
 		this.onShow ? this.onShow() : undefined;
 	}
 
-	__selectAll() {
+	getAllItems() {
 		return document.querySelectorAll(this.getSelector());
 	}
 
@@ -111,7 +111,7 @@ export class Component extends EventTarget
 			this.callBeforeReload();
 			this.__called_before_reload = false;
 
-			const result = this.__selectAll();
+			const result = this.getAllItems();
 			const attrComponent = elem => {
 				for (let child of elem.childNodes) {
 					child._component = this;
@@ -164,7 +164,7 @@ export class Component extends EventTarget
 					this.__first = false;
 				}
 			}
-			this.afterReload ? this.afterReload() : undefined;
+			this.afterReload ? this.afterReload(result) : undefined;
 		}
 		return this.__enabled;
 	}
@@ -177,7 +177,7 @@ export class Component extends EventTarget
 
 	disable() {
 		this.__enabled = false;
-		for (let el of this.__selectAll()) {
+		for (let el of this.getAllItems()) {
 			el.innerHTML = '';
 		}
 		this.onDisable ? this.onDisable() : undefined;
