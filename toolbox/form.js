@@ -244,7 +244,7 @@ export class SelectField extends FormFieldComponent
 		this.onSelect = new EventEmitter("select", this);
 
 		if (options !== undefined) {
-			this.setOptions(options);
+			this.setControllers(options);
 		}
 	}
 
@@ -255,7 +255,7 @@ export class SelectField extends FormFieldComponent
 		return this[property];
 	}
 
-	setOption(control, text, value) {
+	addOption(control, text, value) {
 		if (text === undefined || text === null) {
 			text = control;
 			control = "default";
@@ -265,10 +265,15 @@ export class SelectField extends FormFieldComponent
 		}
 		const options = this[control] || [];
 		options.push({ value, text });
-		this.drawSelect(control, options);
+		this.renderSelect(control, options);
 	}
 
-	drawSelect(control, options) {
+	setOptions(control, options) {
+		this[control] = options;
+		this.renderSelect(control, options);
+	}
+
+	renderSelect(control, options) {
 		const items = document.querySelectorAll(`${this.getSelector()}[controller=${control}] select`);
 
 		for (const item of items) {
@@ -276,7 +281,7 @@ export class SelectField extends FormFieldComponent
 		}
 	}
 
-	setOptions(controls) {
+	setControllers(controls) {
 		const options = {};
 		const controllers = {};
 		Object.keys(controls).forEach(key => {
@@ -303,7 +308,7 @@ export class SelectField extends FormFieldComponent
 		if (option) {
 			option.selected = true;
 		}
-		this.drawSelect(control, options);
+		this.renderSelect(control, options);
 	}
 
 	__select(event, control) {
@@ -329,11 +334,18 @@ export class SelectField extends FormFieldComponent
 		return this.__renderAttributes(attributes);
 	}
 
+	afterReload(items) {
+		for (const item of items) {
+			const control = item.getAttribute("controller");
+			const options = this[control] || [];
+			this.renderSelect(control, options);
+		}
+	}
+
 	render() {
 		const control = this.getAttribute("controller");
 		const select = this.children.querySelector("select");
 		const label = this.children.querySelector("label");
-		const options = this[control] || [];
 		const attributes = {};
 		let labelValue = "";
 
@@ -350,6 +362,6 @@ export class SelectField extends FormFieldComponent
 			labelValue = `<label ${attributes}>${label.innerHTML}</label>`;
 		}
 		this.setCurrentValue(this.getController(control), control);
-		return `${labelValue}<select ${this.selectAttributes(attributes,control)}>${options.map(option => `<option value="${option.value}"${option.selected?" selected":""}>${option.text}</option>`).join('')}</select>`
+		return `${labelValue}<select ${this.selectAttributes(attributes,control)}></select>`
 	}
 }
