@@ -281,9 +281,9 @@ export class Component extends EventTarget
 	getFunctionAttribute(attr, ...args) {
 		const func = this.getAttribute(attr);
 		const element = this.getElement();
-		return function(...prmt) {
+		return func ? function(...prmt) {
 			return new Function(...args, func).call(element, ...prmt);
-		};
+		} : null;
 	}
 	
 	attribute(name) {
