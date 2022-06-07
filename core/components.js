@@ -7,6 +7,14 @@ function createElement(str) {
 	return elem;
 }
 
+export function getAllAttributesFrom(element) {
+	const attributes = {};
+	Array.from(element.attributes).forEach(attr => {
+		attributes[attr.nodeName] = attr.nodeValue;
+	});
+	return attributes;
+}
+
 export class Component extends EventTarget
 {
 	constructor(props, enabled) {
@@ -80,7 +88,7 @@ export class Component extends EventTarget
 		this.onShow ? this.onShow() : undefined;
 	}
 
-	__selectAll() {
+	getAllItems() {
 		return document.querySelectorAll(this.getSelector());
 	}
 
@@ -94,10 +102,8 @@ export class Component extends EventTarget
 		}
 	}
 
-	loadChildNodes() {
-		for (const item of this.__selectAll()) {
-			this.__childNodes[item] = createElement(item.innerHTML);
-		}
+	loadChildNode(item) {
+		this.__childNodes[item] = createElement(item.innerHTML);
 	}
 
 	reload() {
@@ -105,7 +111,7 @@ export class Component extends EventTarget
 			this.callBeforeReload();
 			this.__called_before_reload = false;
 
-			const result = this.__selectAll();
+			const result = this.getAllItems();
 			const attrComponent = elem => {
 				for (let child of elem.childNodes) {
 					child._component = this;
@@ -129,7 +135,7 @@ export class Component extends EventTarget
 				this.__element = item;
 				this.__dataset = item.dataset;
 				if (!item.__created) {
-					this.loadChildNodes();
+					this.loadChildNode(item);
 				}
 				item.innerHTML = this.render(item).trim();
 				attrComponent(item);
@@ -158,7 +164,7 @@ export class Component extends EventTarget
 					this.__first = false;
 				}
 			}
-			this.afterReload ? this.afterReload() : undefined;
+			this.afterReload ? this.afterReload(result) : undefined;
 		}
 		return this.__enabled;
 	}
@@ -171,7 +177,7 @@ export class Component extends EventTarget
 
 	disable() {
 		this.__enabled = false;
-		for (let el of this.__selectAll()) {
+		for (let el of this.getAllItems()) {
 			el.innerHTML = '';
 		}
 		this.onDisable ? this.onDisable() : undefined;
@@ -269,19 +275,15 @@ export class Component extends EventTarget
 	}
 
 	getAllAttributes() {
-		const attributes = {};
-		Array.from(this.element.attributes).forEach(
-			attr => attributes[attr.nodeName] = attr.nodeValue
-		);
-		return attributes;
+		return getAllAttributesFrom(this.element);
 	}
 
 	getFunctionAttribute(attr, ...args) {
 		const func = this.getAttribute(attr);
 		const element = this.getElement();
-		return function(...prmt) {
+		return func ? function(...prmt) {
 			return new Function(...args, func).call(element, ...prmt);
-		};
+		} : null;
 	}
 	
 	attribute(name) {

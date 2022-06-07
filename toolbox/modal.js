@@ -84,6 +84,10 @@ export class ModalContainer extends Component {
         }
     }
 
+    getContent() {
+        return this.content;
+    }
+
     render() {
         return `<modal-component><modal-content></modal-content></modal-component>`;
     }

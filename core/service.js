@@ -6,17 +6,10 @@ export class Injectable
     
     static register(classRef, ...args) {
         const ref = Injectable.services.find(i => i.classRef === classRef);
-        const value = new classRef(...args);
-        value.onRegister();
         
-        if (ref) {
-            ref.value = value;
-            value.notify({
-                name: "inject-set",
-                group: "injection",
-                from: Injectable
-            });
-        } else {
+        if (!ref) {
+            const value = new classRef(...args);
+            value.onRegister();
             Injectable.services.push({ classRef, value });
             value.notify({
                 name: "inject-create",
