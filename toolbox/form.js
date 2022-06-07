@@ -244,7 +244,7 @@ export class SelectField extends FormFieldComponent
 		this.onSelect = new EventEmitter("select", this);
 
 		if (options !== undefined) {
-			this.setControllers(options);
+			this.setSelectControllers(options);
 		}
 	}
 
@@ -281,7 +281,7 @@ export class SelectField extends FormFieldComponent
 		}
 	}
 
-	setControllers(controls) {
+	setSelectControllers(controls) {
 		const options = {};
 		const controllers = {};
 		Object.keys(controls).forEach(key => {
