@@ -2,10 +2,22 @@ import { Service } from '../../semi-reactive/core/service.js';
 
 export class Request extends Service
 {
-	constructor(beforeFetch, catchFetchReturn) {
+	constructor() {
 		super();
-		this.__beforeFetch = beforeFetch ? beforeFetch : () => {};
-		this.__catchFetchReturn = catchFetchReturn ? catchFetchReturn : () => true;
+	}
+
+	beforeFetch() {}
+
+	async catchFetchReturn() {
+		return false;
+	}
+
+	async onSendRetry() {
+		return false;
+	}
+
+	send(url, args) {
+		return fetch(url, args);
 	}
 
 	async request(url, method, body, args) {
@@ -17,14 +29,14 @@ export class Request extends Service
 		if (body) {
 			args.body = JSON.stringify(body);
 		}
-		this.__beforeFetch(args);
+		this.beforeFetch(args);
 
-		const ret = await fetch(url, args);
+		const ret = await this.send(url, args);
 
-		if (this.__catchFetchReturn(ret)) {
+		if (await this.catchFetchReturn(ret)) {
 			return ret;
 		}
-		return false;
+		return await this.onSendRetry(url, args, ret);
 	}
 
 	async getResponse(url, args) {
