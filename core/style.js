@@ -10,8 +10,10 @@ export class Style
 		return ret;
 	}
 
-	static __createStyle(css, selector) {
-		const id = selector.replace(/[^a-zA-Z\d\s:]/gi, '').replace(/\s/g, '');
+	static __createStyle(css, selector, id) {
+		if (!id) {
+			id = selector.replace(/[^a-zA-Z\d\s:]/gi, '').replace(/\s/g, '');
+		}
 		let style = document.head.querySelector(`style#${id}`);
 
 		if (!style) {
@@ -27,8 +29,8 @@ export class Style
 		}).join('\n');
 	}
 
-	static create(selector, css) {
-		Style.__createStyle(css, selector);
+	static create(selector, css, id) {
+		Style.__createStyle(css, selector, id);
 	}
 
 	static createClass(css) {
@@ -65,5 +67,21 @@ export class StyledComponent
 		if (selector && style) {
 			Style.create(selector, style);
 		}
+	}
+}
+
+export class StylePlugin
+{
+	constructor(name) {
+		this.name = name;
+	}
+
+	initPlugin(selector) {
+		const style = this.style();
+		Style.create(selector, style, 'style-plugin');
+	}
+
+	getName() {
+		return this.name;
 	}
 }

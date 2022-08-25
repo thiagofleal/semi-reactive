@@ -1,5 +1,7 @@
 import { Injectable } from "./core/service.js";
 
+let stylePlugin;
+
 export class SemiReactive
 {
 	static async start(args) {
@@ -7,6 +9,7 @@ export class SemiReactive
 		const target = args.target;
 		const load = args.load;
 		const inject = args.inject;
+		const style = args.style;
 
 		if (target && load) {
 			const loaded = await load;
@@ -35,6 +38,22 @@ export class SemiReactive
 			}
 			instance.show(target);
 		}
+		if (style && target) {
+			try {
+				stylePlugin = new style();
+			} catch (e) {
+				if (typeof style === "function") {
+					stylePlugin = style();
+				} else {
+					stylePlugin = style;
+				}
+			}
+			stylePlugin.initPlugin(target);
+		}
+	}
+
+	static getStylePlugin() {
+		return stylePlugin;
 	}
 
 	static instanceDefault(...args) {
