@@ -64,8 +64,8 @@ export class Component extends EventTarget
 		return '';
 	}
 
-	useStyle(plugin) {
-		this.__styles.push(plugin);
+	useStyle(style) {
+		this.__styles.push(style);
 	}
 
 	getSelector() {
@@ -146,7 +146,12 @@ export class Component extends EventTarget
 				attrComponent(item);
 				this.__styles.forEach(style => {
 					if (style instanceof StylePlugin) {
-						style.apply(this.getSelector());
+						style.applyElement(item);
+					} else if (typeof style === "string") {
+						item.className = item.className = [
+							...item.className.split(' ').filter(n => n !== style),
+							style
+						].join(' ');
 					}
 				});
 				this.onReload ? this.onReload(item, this.__first) : undefined;

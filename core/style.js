@@ -102,12 +102,19 @@ export class StylePlugin {
 
 		if (elements) {
 			elements.forEach(element => {
-				element.className = [
-					...element.className.split(' ').filter(n => n !== style),
-					style
-				].join(' ');
+				this.applyElement(element, style);
 			});
 		}
+	}
+
+	applyElement(element, style) {
+		if (!style) {
+			style = this.__style();
+		}
+		element.className = [
+			...element.className.split(' ').filter(n => n !== style),
+			style
+		].join(' ');
 	}
 
 	style() {
