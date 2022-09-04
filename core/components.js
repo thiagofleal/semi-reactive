@@ -1,5 +1,5 @@
 import { Property, PropertySet } from "./properties.js";
-import { Style } from "./style.js";
+import { StylePlugin } from "./style.js";
 
 function createElement(str) {
 	const elem = document.createElement('div');
@@ -29,6 +29,7 @@ export class Component extends EventTarget
 		this.__parent = undefined;
 		this.__id = this.createId(5);
 		this.__childNodes = {};
+		this.__styles = [];
 		delete this.createId;
 		this.definePropertiesObject(props || {});
 	}
@@ -61,6 +62,10 @@ export class Component extends EventTarget
 
 	style() {
 		return '';
+	}
+
+	useStyle(plugin) {
+		this.__styles.push(plugin);
 	}
 
 	getSelector() {
@@ -139,12 +144,12 @@ export class Component extends EventTarget
 				}
 				item.innerHTML = this.render(item).trim();
 				attrComponent(item);
+				this.__styles.forEach(style => {
+					if (style instanceof StylePlugin) {
+						style.apply(this.getSelector());
+					}
+				});
 				this.onReload ? this.onReload(item, this.__first) : undefined;
-			}
-			const selector = this.getSelector();
-			const style = this.style();
-			if (selector && style) {
-				Style.create(selector, style);
 			}
 			this.__loadChildren();
 
