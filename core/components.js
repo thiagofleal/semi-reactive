@@ -60,12 +60,12 @@ export class Component extends EventTarget
 		return '';
 	}
 
-	style() {
-		return '';
-	}
-
 	useStyle(style) {
 		Style.create(style, "", `[component=${this.getId()}]`);
+	}
+
+	useStylePropagate(style) {
+		Style.create(style, `[component=${this.getId()}]`, "");
 	}
 
 	getSelector() {
