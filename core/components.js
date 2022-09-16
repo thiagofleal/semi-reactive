@@ -1,5 +1,5 @@
 import { Property, PropertySet } from "./properties.js";
-import { StylePlugin } from "./style.js";
+import { Style } from "./style.js";
 
 function createElement(str) {
 	const elem = document.createElement('div');
@@ -65,7 +65,7 @@ export class Component extends EventTarget
 	}
 
 	useStyle(style) {
-		this.__styles.push(style);
+		Style.create(style, "", `[component=${this.getId()}]`);
 	}
 
 	getSelector() {
@@ -144,16 +144,6 @@ export class Component extends EventTarget
 				}
 				item.innerHTML = this.render(item).trim();
 				attrComponent(item);
-				this.__styles.forEach(style => {
-					if (style instanceof StylePlugin) {
-						style.applyElement(item);
-					} else if (typeof style === "string") {
-						item.className = item.className = [
-							...item.className.split(' ').filter(n => n !== style),
-							style
-						].join(' ');
-					}
-				});
 				this.onReload ? this.onReload(item, this.__first) : undefined;
 			}
 			this.__loadChildren();
