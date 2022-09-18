@@ -61,11 +61,23 @@ export class Component extends EventTarget
 	}
 
 	useStyle(style) {
-		Style.create(style, "", `[component=${this.getId()}]`);
+		Style.create(style, {
+			prefix: "",
+			posfix: `[component=${this.getId()}]`
+		});
 	}
 
 	useStylePropagate(style) {
-		Style.create(style, `[component=${this.getId()}]`, "");
+		Style.create(style, [
+			{
+				prefix: "",
+				posfix: `[component=${this.getId()}]`
+			},
+			{
+				prefix: `[component=${this.getId()}] `,
+				posfix: ""
+			}
+		]);
 	}
 
 	getSelector() {
