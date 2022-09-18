@@ -87,6 +87,12 @@ export class InputField extends FormFieldComponent
 		super();
 		this.__autocomplete = {};
 		this.setControllers(controls);
+
+		this.useStyle(/*css*/`
+			* {
+				display: block;
+			}
+		`);
 	}
 
 	addAutocomplete(name, get) {
@@ -137,14 +143,6 @@ export class InputField extends FormFieldComponent
 			}
 		}
 		return this.__renderAttributes(attributes);
-	}
-
-	style() {
-		return /*css*/`
-			& {
-				display: block;
-			}
-		`;
 	}
 
 	render() {
