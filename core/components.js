@@ -29,6 +29,7 @@ export class Component extends EventTarget
 		this.__parent = undefined;
 		this.__id = this.createId(5);
 		this.__childNodes = {};
+		this.__styles = [];
 		delete this.createId;
 		this.definePropertiesObject(props || {});
 	}
@@ -59,8 +60,24 @@ export class Component extends EventTarget
 		return '';
 	}
 
-	style() {
-		return '';
+	useStyle(style) {
+		Style.create(style, {
+			prefix: "",
+			posfix: `[component=${this.getId()}]`
+		});
+	}
+
+	useStylePropagate(style) {
+		Style.create(style, [
+			{
+				prefix: "",
+				posfix: `[component=${this.getId()}]`
+			},
+			{
+				prefix: `[component=${this.getId()}] `,
+				posfix: ""
+			}
+		]);
 	}
 
 	getSelector() {
@@ -140,11 +157,6 @@ export class Component extends EventTarget
 				item.innerHTML = this.render(item).trim();
 				attrComponent(item);
 				this.onReload ? this.onReload(item, this.__first) : undefined;
-			}
-			const selector = this.getSelector();
-			const style = this.style();
-			if (selector && style) {
-				Style.create(selector, style);
 			}
 			this.__loadChildren();
 

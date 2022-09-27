@@ -10,6 +10,8 @@ export class Toast extends Component
         super();
         this.time = 2000;
         this.showToast = true;
+
+        this.useStyle(`.toast {visibility: hidden;min-width: 250px;margin-left: -125px;background-color: #333;color: #fff;text-align: center;border-radius: 5px;padding: 16px;position: fixed;z-index: 10000;left: 50%;bottom: 30px;font-size: 17px;}.toast.show {visibility: visible;-webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;animation: fadein 0.5s, fadeout 0.5s 2.5s;}@keyframes fadein {from{bottom: 0;opacity: 0;}to{bottom: 30px;opacity: 1;}}@-webkit-keyframes fadeout{from {bottom: 30px;opacity: 1;}to{bottom: 0;opacity: 0;}}@keyframes fadeout{from{bottom: 30px;opacity: 1;}to{bottom: 0;opacity: 0;}}`);
     }
 
     async open(message, css_class) {
@@ -27,65 +29,6 @@ export class Toast extends Component
             toast.className = classes.join(' ');
             this.showToast = true;
         }
-    }
-
-    style() {
-        return /*css*/`
-            & .toast {
-                visibility: hidden;
-                min-width: 250px;
-                margin-left: -125px;
-                background-color: #333;
-                color: #fff;
-                text-align: center;
-                border-radius: 5px;
-                padding: 16px;
-                position: fixed;
-                z-index: 10000;
-                left: 50%;
-                bottom: 30px;
-                font-size: 17px;
-            }
-            
-            & .toast.show {
-                visibility: visible;
-                -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-                animation: fadein 0.5s, fadeout 0.5s 2.5s;
-            }
-
-            @keyframes fadein {
-                from {
-                    bottom: 0;
-                    opacity: 0;
-                }
-                to {
-                    bottom: 30px;
-                    opacity: 1;
-                }
-            }
-
-            @-webkit-keyframes fadeout {
-                from {
-                    bottom: 30px;
-                    opacity: 1;
-                } 
-                to {
-                    bottom: 0;
-                    opacity: 0;
-                }
-            }
-
-            @keyframes fadeout {
-                from {
-                    bottom: 30px;
-                    opacity: 1;
-                }
-                to {
-                    bottom: 0;
-                    opacity: 0;
-                }
-            }
-        `;
     }
 
     render() {

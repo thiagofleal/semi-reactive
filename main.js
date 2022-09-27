@@ -52,4 +52,4 @@ export class SemiReactive
 	static instanceRoot(className, ...args) {
 		return () => new className(...args);
 	}
-};
+}

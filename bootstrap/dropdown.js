@@ -19,7 +19,6 @@ export class Dropdown extends Component
     }
 
     close() {
-        console.log("Close")
         if (this.__active) {
             this.toggle();
         }
