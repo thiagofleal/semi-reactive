@@ -1,8 +1,23 @@
-export class Request
+import { Service } from '../../semi-reactive/core/service.js';
+
+export class Request extends Service
 {
-	constructor(beforeFetch, catchFetchReturn) {
-		this.__beforeFetch = beforeFetch ? beforeFetch : () => {};
-		this.__catchFetchReturn = catchFetchReturn ? catchFetchReturn : () => true;
+	constructor() {
+		super();
+	}
+
+	beforeFetch() {}
+
+	async catchFetchReturn() {
+		return false;
+	}
+
+	async onSendRetry() {
+		return false;
+	}
+
+	send(url, args) {
+		return fetch(url, args);
 	}
 
 	async request(url, method, body, args) {
@@ -14,14 +29,14 @@ export class Request
 		if (body) {
 			args.body = JSON.stringify(body);
 		}
-		this.__beforeFetch(args);
+		this.beforeFetch(args);
 
-		const ret = await fetch(url, args);
+		const ret = await this.send(url, args);
 
-		if (this.__catchFetchReturn(ret)) {
+		if (await this.catchFetchReturn(ret)) {
 			return ret;
 		}
-		return false;
+		return await this.onSendRetry(url, args, ret);
 	}
 
 	async getResponse(url, args) {
@@ -63,12 +78,12 @@ export class Request
 		return false;
 	}
 
-	async deleteResponse(url, body, args) {
-		return await this.request(url, "DELETE", body, args);
+	async deleteResponse(url, args) {
+		return await this.request(url, "DELETE", null, args);
 	}
 
-	async delete(url, body, args) {
-		const response = await this.deleteResponse(url, body, args);
+	async delete(url, args) {
+		const response = await this.deleteResponse(url, args);
 		
 		if (response !== false) {
 			return await response.json();
