@@ -90,10 +90,16 @@ export class Component extends EventTarget
 	}
 
 	querySelector(query) {
+		if (this.element) {
+			return this.element.querySelector(`[component=${this.getId()}]>${query}`);
+		}
 		return document.querySelector(`[component=${this.getId()}]>${query}`)
 	}
 
 	querySelectorAll(query) {
+		if (this.element) {
+			return this.element.querySelectorAll(`[component=${this.getId()}]>${query}`);
+		}
 		return document.querySelectorAll(`[component=${this.getId()}]>${query}`)
 	}
 
