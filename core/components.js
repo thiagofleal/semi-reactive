@@ -88,6 +88,14 @@ export class Component extends EventTarget
 		return this.__id;
 	}
 
+	querySelector(query) {
+		return document.querySelector(`[component=${this.getId()}]>${query}`)
+	}
+
+	querySelectorAll(query) {
+		return document.querySelectorAll(`[component=${this.getId()}]>${query}`)
+	}
+
 	onFirst() {}
 	onCreate() {}
 
