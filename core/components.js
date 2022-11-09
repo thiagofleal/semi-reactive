@@ -1,5 +1,6 @@
 import { Property, PropertySet } from "./properties.js";
 import { Style } from "./style.js";
+import { EventEmitter } from "./events.js";
 
 function createElement(str) {
 	const elem = document.createElement('div');
@@ -98,6 +99,10 @@ export class Component extends EventTarget
 
 	onFirst() {}
 	onCreate() {}
+
+	createEventEmitter(event) {
+		return new EventEmitter(event, this);
+	}
 
 	getElement() {
 		return this.__element;
