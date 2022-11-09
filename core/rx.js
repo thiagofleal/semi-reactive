@@ -1,5 +1,4 @@
-export class Subscription
-{
+export class Subscription {
 	constructor() {
 		this.__subscriptions = [];
 	}
@@ -13,18 +12,17 @@ export class Subscription
 	}
 }
 
-export class Observer
-{
+export class Observer {
 	constructor(next, error, complete) {
 		this.__subscribed = true;
-		this.onNext = next ? next : () => {};
-		this.onError = error ? error : () => {};
-		this.onComplete = complete ? complete : () => {};
+		this.onNext = next ? next : () => { };
+		this.onError = error ? error : () => { };
+		this.onComplete = complete ? complete : () => { };
 		this.setUnsubscribe();
 	}
 
 	setUnsubscribe(unsubscribe) {
-		this.__unsubscribe = unsubscribe ? unsubscribe : () => {};
+		this.__unsubscribe = unsubscribe ? unsubscribe : () => { };
 	}
 
 	next(value) {
@@ -53,15 +51,14 @@ export class Observer
 	}
 }
 
-export class Observable
-{
+export class Observable {
 	constructor(func) {
 		this.__func = func;
 	}
 
 	subscribe(observer) {
 		let next, error, complete;
-		next = error = complete = () => {};
+		next = error = complete = () => { };
 		if (typeof observer === "object") {
 			if (observer.next) {
 				next = observer.next;
@@ -90,12 +87,15 @@ export class Observable
 
 	toPromise() {
 		return new Promise((resolve, failure) => {
-			const subscription = this.subscribe({
+			let resolveValue = undefined;
+			this.subscribe({
 				next: value => {
-					resolve(value);
-					subscription.unsubscribe();
+					resolveValue = value;
 				},
-				error: err => failure(err)
+				error: err => failure(err),
+				complete: () => {
+					resolve(resolveValue);
+				}
 			});
 		});
 	}
@@ -137,6 +137,20 @@ export class Observable
 		});
 	}
 
+	first() {
+		return new Observable(observer => {
+			const subscription = this.subscribe({
+				next: value => {
+					observer.next(value);
+					observer.complete();
+				},
+				error: err => observer.error(err),
+				complete: () => observer.complete()
+			});
+			return () => subscription.unsubscribe();
+		});
+	}
+
 	static from(src) {
 		return new Observable(observer => {
 			if (Array.isArray(src)) {
@@ -157,7 +171,7 @@ export class Observable
 	static interval(interv) {
 		return new Observable(observer => {
 			let i = 0;
-			
+
 			const id = setInterval(() => {
 				observer.next(i++);
 			}, interv);
@@ -166,18 +180,31 @@ export class Observable
 		});
 	}
 
-	static fromEvent(emitter, eventName) {
+	static fromEvents(emitter, events) {
+		if (!Array.isArray(events)) {
+			events = [events];
+		}
 		return new Observable(observer => {
 			const handler = event => observer.next(event);
-			
-			emitter.addEventListener(eventName, handler);
-			return () => emitter.removeEventListener(eventName, handler);
+
+			events.forEach(eventName => {
+				emitter.addEventListener(eventName, handler);
+			});
+			return () => {
+				events.forEach(eventName => {
+					emitter.removeEventListener(eventName, handler)
+				});
+			};
 		});
+	}
+
+	static fromEvent(emitter, eventName) {
+		return Observable.fromEvent(emitter, [eventName]);
 	}
 
 	static fromEventSource(url, events) {
 		const source = new EventSource(url);
-		
+
 		if (!Array.isArray(events)) {
 			events = [events];
 		}
@@ -197,8 +224,7 @@ export class Observable
 	}
 }
 
-export class Subject extends Observable
-{
+export class Subject extends Observable {
 	constructor() {
 		super(observer => {
 			this.observers.push(observer);

@@ -13,7 +13,7 @@ export class FormFieldComponent extends Component
 	}
 
 	setValue(controller, value) {
-		const items = document.querySelectorAll(`${this.getSelector()}[controller=${controller}] input`);
+		const items = document.querySelectorAll(`${this.getSelector()}[controller=${controller}] input, ${this.getSelector()}[controller=${controller}] textarea`);
 
 		for (const item of items) {
 			if (this.getController(controller) !== undefined) {
@@ -152,6 +152,7 @@ export class InputField extends FormFieldComponent
 		const options = {};
 
 		const input = this.children.querySelector("input");
+		const textarea = this.children.querySelector("textarea");
 		const label = this.children.querySelector("label");
 		let labelValue = "";
 
@@ -164,13 +165,19 @@ export class InputField extends FormFieldComponent
 			if (autocomplete) {
 				options.list = "__auto-complete-" + autocomplete;
 			}
+		} else if (textarea) {
+			const attr = getAllAttributesFrom(textarea);
+
+			for (let key in attr) {
+				options[key] = attr[key];
+			}
 		}
 		if (label) {
 			const attr = getAllAttributesFrom(label);
 			let attributes = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
 			labelValue = `<label ${attributes}>${label.innerHTML}</label>`;
 		}
-		return `${labelValue}<input ${this.inputAttributes(options, controller)}>${autocomplete?`<datalist id="${ options.list }">${list.map(option => `<option>${ option }</option>`).join('')}</datalist>`:""}`;
+		return `${labelValue}<${textarea?'textarea':'input'} ${this.inputAttributes(options, controller)}>${textarea?`${options.value}</textarea>`:''}${autocomplete?`<datalist id="${ options.list }">${list.map(option => `<option>${ option }</option>`).join('')}</datalist>`:""}`;
 	}
 }
 

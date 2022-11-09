@@ -40,4 +40,11 @@ export class EventEmitter extends EventTarget
 			return () => origin.removeEventListener(this.eventName, callback);
 		});
 	}
+
+	initFromProperty(propertyName) {
+		const callback = this.component.getFunctionAttribute(propertyName, "event");
+		if (callback) {
+			this.then(callback);
+		}
+	}
 }

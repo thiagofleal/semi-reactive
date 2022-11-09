@@ -66,7 +66,7 @@ export class Router extends Switch
 	}
 }
 
-export class SimpleRouter extends Router
+export class HashRouter extends Router
 {
 	constructor(props) {
 		super(props);
@@ -97,3 +97,8 @@ export class SimpleRouter extends Router
 		return s_ret;
 	}
 }
+
+/**
+ * @deprecated - Use HashRouter
+ */
+export const SimpleRouter = HashRouter;

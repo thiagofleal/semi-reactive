@@ -1,5 +1,6 @@
 import { Property, PropertySet } from "./properties.js";
 import { Style } from "./style.js";
+import { EventEmitter } from "./events.js";
 
 function createElement(str) {
 	const elem = document.createElement('div');
@@ -88,8 +89,26 @@ export class Component extends EventTarget
 		return this.__id;
 	}
 
+	querySelector(query) {
+		if (this.element) {
+			return this.element.querySelector(`[component=${this.getId()}]>${query}`);
+		}
+		return document.querySelector(`[component=${this.getId()}]>${query}`)
+	}
+
+	querySelectorAll(query) {
+		if (this.element) {
+			return this.element.querySelectorAll(`[component=${this.getId()}]>${query}`);
+		}
+		return document.querySelectorAll(`[component=${this.getId()}]>${query}`)
+	}
+
 	onFirst() {}
 	onCreate() {}
+
+	createEventEmitter(event) {
+		return new EventEmitter(event, this);
+	}
 
 	getElement() {
 		return this.__element;

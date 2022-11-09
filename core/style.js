@@ -22,7 +22,9 @@ export class Style {
 				return str.replace(/.+?(?=,|\{)/g, inner => {
 					return inner.replace(/[a-zA-Z0-9\-\s\[\]:\(\)*>="\.~\^\+]{1,}/g, select => {
 						return options.map(({ prefix, posfix }) => {
-							return `${prefix}${select}${posfix}`;
+							return ["from", "to"].includes(select)
+								? `${select}`
+								: `${prefix}${select}${posfix}`;
 						}).join(',');
 					});
 				});
