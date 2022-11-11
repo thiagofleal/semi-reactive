@@ -6,6 +6,7 @@ export class ModalComponent extends Component {
             __active: false
         });
         this.onOpen = this.onClose = () => null;
+        this.useStyle(`.modal.show{display:block;}`);
     }
 
     onCreate() {
