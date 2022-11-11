@@ -10,7 +10,7 @@ export class DialogComponent extends Component {
     if (options === undefined) {
       options = {};
     }
-    this.useStyle(`.dialog{display:none;position:fixed;z-index:1;padding-top:${options.top||"100px"};left:0;top:0;width:100%;height:100%;overflow:auto;margin:auto;}.dialog.show{display:block;}.dialog-content{position:relative;margin:auto;display:flex;flex-direction:column;max-width:100%;width:${options.width||"700px"};color:#000;pointer-events:auto;background-color:${options.background||"#fefefe"};background-clip:padding-box;border:none;border-radius:${options.borderRadius||"10px"};box-shadow:0 0 3px #000;outline:0;-webkit-animation-name:animatetop;-webkit-animation-duration:${options.duration||"0.3s"};animation-name:animatetop;animation-duration:${options.duration||"0.3s"}}@-webkit-keyframes animatetop{from{top:${options.animationFromTop||"-300px"};opacity:0}to{top:0;opacity:1}}@keyframes animatetop{from{top:${options.animationFromTop||"-300px"};opacity:0}to{top:0;opacity:1}}dialog-header{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;padding:${options.headerPadding||"10px"};border-bottom:10px;border-radius:15px 15px 0 0;}dialog-body{position:relative;flex:1 1 auto;padding:10px;}dialog-footer{display:flex;flex-shrink:0;flex-wrap:wrap;align-items:center;justify-content:flex-end;padding:10px;border-radius:0 0 15px 15px;}`);
+    this.useStylePropagate(`.dialog{display:none;position:fixed;z-index:1;padding-top:${options.top||"100px"};left:0;top:0;width:100%;height:100%;overflow:auto;margin:auto;}.dialog.show{display:block;}.dialog-content{position:relative;margin:auto;display:flex;flex-direction:column;max-width:100%;width:${options.width||"700px"};color:#000;pointer-events:auto;background-color:${options.background||"#fefefe"};background-clip:padding-box;border:none;border-radius:${options.borderRadius||"10px"};box-shadow:0 0 3px #000;outline:0;-webkit-animation-name:animatetop;-webkit-animation-duration:${options.duration||"0.3s"};animation-name:animatetop;animation-duration:${options.duration||"0.3s"}}@-webkit-keyframes animatetop{from{top:${options.animationFromTop||"-300px"};opacity:0}to{top:0;opacity:1}}@keyframes animatetop{from{top:${options.animationFromTop||"-300px"};opacity:0}to{top:0;opacity:1}}dialog-header{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;padding:${options.headerPadding||"10px"};border-bottom:10px;border-radius:15px 15px 0 0;}dialog-body{position:relative;flex:1 1 auto;padding:10px;}dialog-footer{display:flex;flex-shrink:0;flex-wrap:wrap;align-items:center;justify-content:flex-end;padding:10px;border-radius:0 0 15px 15px;}`);
   }
 
   onCreate() {
@@ -61,9 +61,9 @@ export class DialogComponent extends Component {
 }
 
 export class DialogContainer extends Component {
-  constructor(componentClass, ...args) {
+  constructor(componentClass, dialogOptions, ...args) {
     super();
-    this.dialog = new ModalComponent();
+    this.dialog = new DialogComponent(dialogOptions);
     this.content = new componentClass(this, ...args);
     this.appendChild(this.dialog, "dialog-component");
     this.dialog.appendChild(this.content, "dialog-content");
