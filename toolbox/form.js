@@ -15,10 +15,10 @@ export class FormFieldComponent extends Component
 	setValue(controller, value) {
 		const items = document.querySelectorAll(`${this.getSelector()}[controller=${controller}] input, ${this.getSelector()}[controller=${controller}] textarea`);
 
+		if (this.getController(controller) !== undefined) {
+			this.setControllerValue(controller, value);
+		}
 		for (const item of items) {
-			if (this.getController(controller) !== undefined) {
-				this.setControllerValue(controller, value);
-			}
 			item.value = value;
 		}
 	}
