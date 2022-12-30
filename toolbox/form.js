@@ -6,9 +6,19 @@ export class FormFieldComponent extends Component
 	constructor(props) {
 		super(props);
 		this.__controlNames = {};
+		this.__controlValidators = {};
 	}
 
 	addFieldControl(name, value) {
+		Object.defineProperty(this.__controlValidators, name, {
+			value: {
+				touched: value.touched || false,
+				invalid: value.invalid || false,
+				validate: value.validate || (() => ""),
+				errorClassName: value.errorClassName || "",
+				error: ""
+			}
+		});
 		Object.defineProperty(this.__controlNames, name, value);
 	}
 
@@ -40,10 +50,42 @@ export class FormFieldComponent extends Component
 		this.__controlNames[name] = value;
 	}
 
+	__validate(name) {
+		const value = this.__controlNames[name];
+		const ret = this.__controlValidators[name].error = this.__controlValidators[name].validate(value);
+		this.__controlValidators[name].invalid = !!this.__controlValidators[name].error;
+		return ret;
+	}
+
+	setTouched(name, touched) {
+		this.__controlValidators[name].touched = touched;
+		if (touched) {
+			this.__validate(name);
+		}
+	}
+
+	isTouched(name) {
+		return this.__controlValidators[name].touched;
+	}
+
+	isInvalid(name) {
+		return this.__controlValidators[name].invalid;
+	}
+
 	__onInput(target, ctrl) {
 		if (target && ctrl) {
 			this.setControllerValue(ctrl, target.value || "");
 			target.value = this.getController(ctrl);
+
+			if (this.__controlValidators[ctrl].touched) {
+				this.__validate(ctrl);
+			}
+		}
+	}
+
+	__onBlur(target, ctrl) {
+		if (target && ctrl) {
+			this.setTouched(ctrl, true);
 		}
 	}
 
@@ -108,6 +150,25 @@ export class InputField extends FormFieldComponent
 		}
 	}
 
+	__validate(name) {
+		const ret = super.__validate(name);
+		const controllerElements = document.querySelectorAll(`${this.getSelector()}[controller=${name}]`);
+		controllerElements.forEach(element => {
+			const span = element.querySelector("error-field span");
+			const errorClassName = this.__controlValidators[name].errorClassName;
+			if (span) span.innerHTML = ret;
+			if (errorClassName) {
+				const input = element.querySelector("input, textarea");
+				if (input) {
+					const classes = input.className.split(" ").filter(e => e !== errorClassName);
+					if (ret) classes.push(errorClassName);
+					input.className = classes.join(" ");
+				}
+			}
+		});
+		return ret;
+	}
+
 	inputAttributes(options, controller) {
 		const attributes = [];
 
@@ -129,10 +190,18 @@ export class InputField extends FormFieldComponent
 			});
 		}
 		if (controller) {
+			let onblur = false;
 			for (const event of options.events) {
+				if (event === "onblur") onblur = true;
 				attributes.push({
 					name: event,
 					value: `this.component.__onInput(this, '${controller}')`
+				});
+			}
+			if (!onblur) {
+				attributes.push({
+					name: "onblur",
+					value: `this.component.__onBlur(this, '${controller}')`
 				});
 			}
 		}
@@ -148,7 +217,9 @@ export class InputField extends FormFieldComponent
 		const input = this.children.querySelector("input");
 		const textarea = this.children.querySelector("textarea");
 		const label = this.children.querySelector("label");
+		const error = this.children.querySelector("error-field");
 		let labelValue = "";
+		let errorOptions = "";
 
 		if (input) {
 			const attr = getAllAttributesFrom(input);
@@ -171,7 +242,11 @@ export class InputField extends FormFieldComponent
 			let attributes = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
 			labelValue = `<label ${attributes}>${label.innerHTML}</label>`;
 		}
-		return `${labelValue}<${textarea?'textarea':'input'} ${this.inputAttributes(options, controller)}>${textarea?`${options.value}</textarea>`:''}${autocomplete?`<datalist id="${ options.list }">${list.map(option => `<option>${ option }</option>`).join('')}</datalist>`:""}`;
+		if (error) {
+			const attr = getAllAttributesFrom(error);
+			errorOptions = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
+		}
+		return `${labelValue}<${textarea?'textarea':'input'} ${this.inputAttributes(options, controller)}>${textarea?`${options.value}</textarea>`:''}${autocomplete?`<datalist id="${options.list}">${list.map(option => `<option>${ option }</option>`).join('')}</datalist>`:""}<error-field><span ${errorOptions}></span></error-field>`;
 	}
 }
 
