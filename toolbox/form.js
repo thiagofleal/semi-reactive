@@ -87,12 +87,6 @@ export class InputField extends FormFieldComponent
 		super();
 		this.__autocomplete = {};
 		this.setControllers(controls);
-
-		this.useStyle(/*css*/`
-			* {
-				display: block;
-			}
-		`);
 	}
 
 	addAutocomplete(name, get) {
