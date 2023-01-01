@@ -1,6 +1,15 @@
 import { Component, getAllAttributesFrom } from '../core/components.js';
 import { EventEmitter } from '../core/events.js';
 
+function getElementClasses(element, ignore) {
+	if (!ignore) ignore = [];
+	if (!Array.isArray(ignore)) ignore = [ignore];
+	if (element) {
+		return element.className.split(" ").filter(e => !ignore.includes(e));
+	}
+	return [];
+}
+
 export class FormFieldComponent extends Component
 {
 	constructor(props) {
@@ -10,15 +19,14 @@ export class FormFieldComponent extends Component
 	}
 
 	addFieldControl(name, value) {
-		Object.defineProperty(this.__controlValidators, name, {
-			value: {
-				touched: value.touched || false,
-				invalid: value.invalid || false,
-				validate: value.validate || (() => ""),
-				errorClassName: value.errorClassName || "",
-				error: ""
-			}
-		});
+		this.__controlValidators[name] = {
+			touched: value.touched || false,
+			invalid: value.invalid || false,
+			validate: value.validate || (() => ""),
+			errorClassName: value.errorClassName || "",
+			validatedClassName: value.validatedClassName || "",
+			error: ""
+		};
 		Object.defineProperty(this.__controlNames, name, value);
 	}
 
@@ -50,17 +58,31 @@ export class FormFieldComponent extends Component
 		this.__controlNames[name] = value;
 	}
 
-	__validate(name) {
+	__validate(name, touched) {
 		const value = this.__controlNames[name];
-		const ret = this.__controlValidators[name].error = this.__controlValidators[name].validate(value);
-		this.__controlValidators[name].invalid = !!this.__controlValidators[name].error;
+		let ret = "";
+		this.__controlValidators[name].error = ret;
+		if (touched) {
+			ret = this.__controlValidators[name].error = this.__controlValidators[name].validate(value);
+		}
+		this.__controlValidators[name].invalid = !!ret;
 		return ret;
 	}
 
 	setTouched(name, touched) {
 		this.__controlValidators[name].touched = touched;
-		if (touched) {
-			this.__validate(name);
+		this.__validate(name, touched);
+	}
+
+	setAllTouched(touched) {
+		for (const name in this.__controlValidators) {
+			this.setTouched(name, touched);
+		}
+	}
+
+	setValueAll(value) {
+		for (const name in this.__controlValidators) {
+			this.setValue(name, value);
 		}
 	}
 
@@ -72,13 +94,27 @@ export class FormFieldComponent extends Component
 		return this.__controlValidators[name].invalid;
 	}
 
+	hasTouched() {
+		for (const name in this.__controlValidators) {
+			if (this.isTouched(name)) return true;
+		}
+		return false;
+	}
+
+	hasInvalid() {
+		for (const name in this.__controlValidators) {
+			if (this.isInvalid(name)) return true;
+		}
+		return false;
+	}
+
 	__onInput(target, ctrl) {
 		if (target && ctrl) {
 			this.setControllerValue(ctrl, target.value || "");
 			target.value = this.getController(ctrl);
 
 			if (this.__controlValidators[ctrl].touched) {
-				this.__validate(ctrl);
+				this.__validate(ctrl, true);
 			}
 		}
 	}
@@ -150,23 +186,50 @@ export class InputField extends FormFieldComponent
 		}
 	}
 
-	__validate(name) {
-		const ret = super.__validate(name);
+	setTouched(name, touched) {
+		super.setTouched(name, touched);
+		if (!touched) {
+			this.__removeClasses(name);
+		}
+	}
+
+	__setInputClasses(name, callback) {
 		const controllerElements = document.querySelectorAll(`${this.getSelector()}[controller=${name}]`);
 		controllerElements.forEach(element => {
-			const span = element.querySelector("error-field span");
 			const errorClassName = this.__controlValidators[name].errorClassName;
-			if (span) span.innerHTML = ret;
-			if (errorClassName) {
+			const validatedClassName = this.__controlValidators[name].validatedClassName;
+			if (errorClassName || validatedClassName) {
 				const input = element.querySelector("input, textarea");
 				if (input) {
-					const classes = input.className.split(" ").filter(e => e !== errorClassName);
-					if (ret) classes.push(errorClassName);
+					const classes = getElementClasses(input, [ errorClassName, validatedClassName ]);
+					if (callback) callback({ input, element, classes, errorClassName, validatedClassName });
+					input.className = classes.join(" ");
+				}
+			}
+		});
+	}
+
+	__validate(name, touched) {
+		const ret = super.__validate(name, touched);
+		this.__setInputClasses(name, ({input, element, classes, errorClassName, validatedClassName}) => {
+			const small = element.querySelector("error-field small");
+			if (small) small.innerHTML = ret;
+			if (errorClassName || validatedClassName) {
+				if (input) {
+					if (ret) {
+						if (errorClassName) classes.push(errorClassName);
+					} else {
+						if (validatedClassName) classes.push(validatedClassName);
+					}
 					input.className = classes.join(" ");
 				}
 			}
 		});
 		return ret;
+	}
+
+	__removeClasses(name) {
+		this.__setInputClasses(name);
 	}
 
 	inputAttributes(options, controller) {
@@ -246,7 +309,7 @@ export class InputField extends FormFieldComponent
 			const attr = getAllAttributesFrom(error);
 			errorOptions = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
 		}
-		return `${labelValue}<${textarea?'textarea':'input'} ${this.inputAttributes(options, controller)}>${textarea?`${options.value}</textarea>`:''}${autocomplete?`<datalist id="${options.list}">${list.map(option => `<option>${ option }</option>`).join('')}</datalist>`:""}<error-field><span ${errorOptions}></span></error-field>`;
+		return `${labelValue}<${textarea?'textarea':'input'} ${this.inputAttributes(options, controller)}>${textarea?`${options.value}</textarea>`:''}${autocomplete?`<datalist id="${options.list}">${list.map(option => `<option>${ option }</option>`).join('')}</datalist>`:""}<error-field><small ${errorOptions}></small></error-field>`;
 	}
 }
 
