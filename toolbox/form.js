@@ -1,234 +1,246 @@
 import { Component, getAllAttributesFrom } from '../core/components.js';
-import { EventEmitter } from '../core/events.js';
+
+function getElementClasses(element, ignore) {
+	if (!ignore) ignore = [];
+	if (!Array.isArray(ignore)) ignore = [ignore];
+	if (element) {
+		return element.className.split(" ").filter(e => !ignore.includes(e));
+	}
+	return [];
+}
 
 export class FormFieldComponent extends Component
 {
-	constructor(props) {
+	constructor(props, controllers) {
 		super(props);
-		this.__controlNames = {};
-		this.__controlValidators = {};
+		this.__controllers = {};
+		this.setControllers(controllers || {});
 	}
 
-	addFieldControl(name, value) {
-		Object.defineProperty(this.__controlValidators, name, {
-			value: {
-				touched: value.touched || false,
-				invalid: value.invalid || false,
-				validate: value.validate || (() => ""),
-				errorClassName: value.errorClassName || "",
-				error: ""
-			}
-		});
-		Object.defineProperty(this.__controlNames, name, value);
+	setController(name, values) {
+		this.__controllers[name] = {
+			get: values.get || (() => ""),
+			set: values.set || (() => void 0),
+			errorClassName: values.errorClassName || "",
+			validatedClassName: values.validatedClassName || "",
+			validatedMessage: values.validatedMessage || "",
+			validate: values.validate || (() => ""),
+			touched: false,
+			invalid: false
+		};
 	}
 
-	setValue(controller, value) {
-		const items = document.querySelectorAll(`${this.getSelector()}[controller=${controller}] input, ${this.getSelector()}[controller=${controller}] textarea`);
-
-		if (this.getController(controller) !== undefined) {
-			this.setControllerValue(controller, value);
-		}
-		for (const item of items) {
-			item.value = value;
-		}
-	}
-
-	setControllers(controls, append) {
+	setControllers(controllers, append) {
 		if (!append) {
-			this.__controlNames = {};
+			this.__controllers = {};
 		}
-		for (const key in controls) {
-			this.addFieldControl(key, controls[key]);
+		for (const key in controllers) {
+			this.setController(key, controllers[key]);
 		}
 	}
 
-	getController(name) {
-		return this.__controlNames[name];
+	getControllerValue(name) {
+		return this.__controllers[name].get();
 	}
-
 	setControllerValue(name, value) {
-		this.__controlNames[name] = value;
+		this.__controllers[name].set(value);
+		this.onSetValue(name, this.getControllerValue(name));
+		this.validate(name);
 	}
-
-	__validate(name) {
-		const value = this.__controlNames[name];
-		const ret = this.__controlValidators[name].error = this.__controlValidators[name].validate(value);
-		this.__controlValidators[name].invalid = !!this.__controlValidators[name].error;
-		return ret;
-	}
-
-	setTouched(name, touched) {
-		this.__controlValidators[name].touched = touched;
-		if (touched) {
-			this.__validate(name);
+	setValueAll(value) {
+		for (const name in this.__controllers) {
+			this.setControllerValue(name, value);
 		}
 	}
 
-	isTouched(name) {
-		return this.__controlValidators[name].touched;
+	getControllerTouched(name) {
+		return this.__controllers[name].touched;
 	}
-
-	isInvalid(name) {
-		return this.__controlValidators[name].invalid;
+	setControllerTouched(name, value) {
+		this.__controllers[name].touched = value;
+		this.validate(name);
 	}
-
-	__onInput(target, ctrl) {
-		if (target && ctrl) {
-			this.setControllerValue(ctrl, target.value || "");
-			target.value = this.getController(ctrl);
-
-			if (this.__controlValidators[ctrl].touched) {
-				this.__validate(ctrl);
-			}
+	setAllTouched(value) {
+		for (const name in this.__controllers) {
+			this.setControllerTouched(name, value);
 		}
 	}
 
-	__onBlur(target, ctrl) {
-		if (target && ctrl) {
-			this.setTouched(ctrl, true);
-		}
+	getFieldElement(controller) {
+		return document.querySelector(`${ this.getSelector() }[controller=${ controller }]`);
 	}
 
-	__onCheckbox(target, ctrl) {
-		if (target && ctrl) {
-			this.setControllerValue(ctrl, target.checked || false);
-			target.checked = this.getController(ctrl);
-		}
+	getFieldElements(controller) {
+		return document.querySelectorAll(`${ this.getSelector() }[controller=${ controller }]`) || [];
 	}
 
-	__renderAttributes(attributes) {
-		return attributes.map(
-			attr => {
-				if (attr.name == 'enabled') {
-					if (attr.value) {
-						return '';
-					} else {
-						return 'disabled';
+	getControllerElements(controller) {
+		return this.getFieldElement(controller).querySelectorAll(this.getFieldSelector());
+	}
+
+	validate(controllerName) {
+		const controller = this.__controllers[controllerName];
+
+		if (controller.touched) {
+			const value = this.getControllerValue(controllerName);
+			const elements = this.getFieldElements(controllerName);
+			const error = controller.validate(value);
+
+			controller.invalid = !!error;
+			elements.forEach(element => {
+				const field = element.querySelector(this.getFieldSelector());
+				const classNames = getElementClasses(field, [
+					controller.errorClassName,
+					controller.validatedClassName
+				]);
+				const errorField = element.querySelector("error-field");
+				const successField = element.querySelector("success-field");
+
+				errorField.innerHTML = "";
+				successField.innerHTML = "";
+
+				if (error) {
+					controller.errorClassName ? classNames.push(controller.errorClassName) : void 0;
+
+					if (errorField) errorField.innerHTML = error;
+				} else {
+					controller.validatedClassName ? classNames.push(controller.validatedClassName) : void 0;
+
+					if (controller.validatedMessage) {
+						if (successField) successField.innerHTML = controller.validatedMessage;
 					}
 				}
-				if (attr.name == 'checked') {
-					if (attr.value) {
-						return 'checked';
+				field.className = classNames.join(" ");
+			});
+		} else {
+			const value = this.getControllerValue(controllerName);
+			const elements = this.getFieldElements(controllerName);
+
+			controller.invalid = false;
+			elements.forEach(element => {
+				const field = element.querySelector(this.getFieldSelector());
+				const classNames = getElementClasses(field, [
+					controller.errorClassName,
+					controller.validatedClassName
+				]);
+				const errorField = element.querySelector("error-field");
+				const successField = element.querySelector("success-field");
+
+				if (errorField) errorField.innerHTML = "";
+				if (successField) successField.innerHTML = "";
+
+				field.className = classNames.join(" ");
+			});
+		}
+	}
+
+	renderAttributes(attributes) {
+		return Object.keys(attributes).map(
+			key => {
+				if (key === "enabled") {
+					if (attributes[key]) {
+						return "";
 					} else {
-						return '';
+						return "disabled";
 					}
 				}
-				return `${attr.name}="${
-					Array.isArray(attr)
-						?	attr.join(' ')
-						:	attr.value
+				if (key === "checked") {
+					if (attributes[key]) {
+						return "checked";
+					} else {
+						return "";
+					}
+				}
+				return `${key}="${
+					Array.isArray(attributes[key])
+						?	attributes[key].join(" ")
+						:	attributes[key]
 				}"`;
 			}
-		).join(' ');
+		).join(" ");
+	}
+
+	onCreate() {
+		const controller = this.getAttribute("controller");
+		const value = this.getControllerValue(controller);
+		this.onSetValue(controller, value);
+	}
+
+	render() {
+		const controller = this.getAttribute("controller");
+		const element = this.getFieldElement(controller);
+		const error = this.children.querySelector("error-field");
+		const success = this.children.querySelector("success-field");
+		let errorOptions = "";
+		let successOptions = "";
+
+		if (error) {
+			const attr = getAllAttributesFrom(error);
+			errorOptions = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(" ");
+		}
+		if (success) {
+			const attr = getAllAttributesFrom(success);
+			successOptions = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(" ");
+		}
+		return `${ this.renderField(controller) }<error-field ${errorOptions}></error-field><success-field ${successOptions}></success-field>`;
+	}
+
+	afterReload(result) {
+		for (const item of result) {
+			const controllerName = item.getAttribute("controller");
+			const element = item.querySelector(this.getFieldSelector());
+			const events = this.eventsToBind(element, controllerName);
+			for (const key in events) {
+				element.addEventListener(key, events[key]);
+			}
+		}
+	}
+
+	onSetValue(controller, value) {}
+
+	getFieldSelector() {
+		return "input";
+	}
+
+	renderField(controller) {
+		return "";
+	}
+
+	eventsToBind(element, controller) {
+		return {};
 	}
 }
 
 export class InputField extends FormFieldComponent
 {
-	constructor(controls) {
-		super();
-		this.__autocomplete = {};
-		this.setControllers(controls);
+	constructor(controllers) {
+		super({}, controllers);
 	}
 
-	addAutocomplete(name, get) {
-		Object.defineProperty(this.__autocomplete, name, { get });
-	}
-
-	setAutocomplete(controls) {
-		for (const key in controls) {
-			this.addAutocomplete(key, controls[key]);
-		}
-	}
-
-	updateAutocomplete(autocomplete) {
-		const list = this.__autocomplete[autocomplete];
-		const items = document.querySelectorAll(`${this.getSelector()} #__auto-complete-${autocomplete}`);
-
-		for (const item of items) {
-			item.innerHTML = list.map(option => `<option>${ option }</option>`).join('');
-		}
-	}
-
-	__validate(name) {
-		const ret = super.__validate(name);
-		const controllerElements = document.querySelectorAll(`${this.getSelector()}[controller=${name}]`);
-		controllerElements.forEach(element => {
-			const span = element.querySelector("error-field span");
-			const errorClassName = this.__controlValidators[name].errorClassName;
-			if (span) span.innerHTML = ret;
-			if (errorClassName) {
-				const input = element.querySelector("input, textarea");
-				if (input) {
-					const classes = input.className.split(" ").filter(e => e !== errorClassName);
-					if (ret) classes.push(errorClassName);
-					input.className = classes.join(" ");
-				}
-			}
+	onSetValue(controller, value) {
+		const elements = this.getControllerElements(controller);
+		elements.forEach(element => {
+			element.value = value;
 		});
-		return ret;
 	}
 
-	inputAttributes(options, controller) {
-		const attributes = [];
-
-		const defaultOptions = {
-			type: 'text',
-			events: ['oninput'],
-			value: controller ? this.getController(controller) || "" : ""
-		};
-
-		for (const key in defaultOptions) {
-			if (options[key] === undefined) {
-				options[key] = defaultOptions[key];
-			}
-		}
-		for (const key in options) {
-			attributes.push({
-				name: key,
-				value: options[key]
-			});
-		}
-		if (controller) {
-			let onblur = false;
-			for (const event of options.events) {
-				if (event === "onblur") onblur = true;
-				attributes.push({
-					name: event,
-					value: `this.component.__onInput(this, '${controller}')`
-				});
-			}
-			if (!onblur) {
-				attributes.push({
-					name: "onblur",
-					value: `this.component.__onBlur(this, '${controller}')`
-				});
-			}
-		}
-		return this.__renderAttributes(attributes);
+	getFieldSelector() {
+		return "input, textarea";
 	}
 
-	render() {
-		const controller = this.getAttribute("controller");
-		const autocomplete = this.getAttribute("autocomplete");
-		const list = autocomplete ? this.__autocomplete[autocomplete] : [];
+	renderField(controller) {
 		const options = {};
 
 		const input = this.children.querySelector("input");
 		const textarea = this.children.querySelector("textarea");
 		const label = this.children.querySelector("label");
-		const error = this.children.querySelector("error-field");
 		let labelValue = "";
-		let errorOptions = "";
 
 		if (input) {
 			const attr = getAllAttributesFrom(input);
 
 			for (let key in attr) {
 				options[key] = attr[key];
-			}
-			if (autocomplete) {
-				options.list = "__auto-complete-" + autocomplete;
 			}
 		} else if (textarea) {
 			const attr = getAllAttributesFrom(textarea);
@@ -242,55 +254,72 @@ export class InputField extends FormFieldComponent
 			let attributes = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
 			labelValue = `<label ${attributes}>${label.innerHTML}</label>`;
 		}
-		if (error) {
-			const attr = getAllAttributesFrom(error);
-			errorOptions = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
+		return `${labelValue}<${textarea?'textarea':'input'} ${this.renderAttributes(options)}>${textarea?`${options.value || ""}</textarea>`:''}`;
+	}
+
+	eventsToBind(element, controller) {
+		return {
+			input: () => {
+				this.setControllerValue(controller, element.value);
+			},
+			blur: () => {
+				if (!this.getControllerTouched(controller)) {
+					this.setControllerTouched(controller, true);
+				}
+			}
 		}
-		return `${labelValue}<${textarea?'textarea':'input'} ${this.inputAttributes(options, controller)}>${textarea?`${options.value}</textarea>`:''}${autocomplete?`<datalist id="${options.list}">${list.map(option => `<option>${ option }</option>`).join('')}</datalist>`:""}<error-field><span ${errorOptions}></span></error-field>`;
 	}
 }
 
-export class CheckBox extends FormFieldComponent
+export class InputDatalistField extends FormFieldComponent
 {
-	constructor(controls) {
-		super();
-		this.setControllers(controls);
+	constructor(controllers) {
+		super({}, controllers);
 	}
 
-	checkboxAttributes(options, controller) {
-		const attributes = [];
+	setController(name, values) {
+		super.setController(name, values);
+		this.__controllers[name].datalist = values.datalist || [];
+	}
 
-		const defaultOptions = {
-			type: 'checkbox',
-			events: ['onchange'],
-			checked: this.getController(controller)
+	getControllerDatalist(controller) {
+		return this.__controllers[controller].datalist;
+	}
+	setControllerDatalist(controller, datalist) {
+		this.__controllers[controller].datalist = datalist;
+		const elements = this.getDatalistElements(controller);
+		elements.forEach(element => {
+			element.innerHTML = datalist.map(item => `<option value="${item}"></option>`)
+		});
+	}
+
+	getDatalistId(controller) {
+		return `${this.getId()}-${controller}`;
+	}
+
+	getDatalistElements(controller) {
+		return document.querySelectorAll(`${this.getSelector()}[controller=${controller}] datalist`);
+	}
+
+	onSetValue(controller, value) {
+		const elements = this.getControllerElements(controller);
+		elements.forEach(element => {
+			element.value = value;
+		});
+	}
+
+	getFieldSelector() {
+		return "input";
+	}
+
+	renderField(controller) {
+		const options = {
+			list: this.getDatalistId(controller)
 		};
 
-		for (const key in defaultOptions) {
-			if (options[key] === undefined) {
-				options[key] = defaultOptions[key];
-			}
-		}
-		for (const key in options) {
-			attributes.push({
-				name: key,
-				value: options[key]
-			});
-		}
-		for (const event of options.events) {
-			attributes.push({
-				name: event,
-				value: `this.component.__onCheckbox(this, '${controller}')`
-			});
-		}
-		return this.__renderAttributes(attributes);
-	}
-
-	render() {
-		const controller = this.getAttribute("controller");
 		const input = this.children.querySelector("input");
 		const label = this.children.querySelector("label");
-		const options = {};
+		const datalist = this.getControllerDatalist(controller);
 		let labelValue = "";
 
 		if (input) {
@@ -305,137 +334,153 @@ export class CheckBox extends FormFieldComponent
 			let attributes = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
 			labelValue = `<label ${attributes}>${label.innerHTML}</label>`;
 		}
-		return `<input ${this.checkboxAttributes(options, controller)}>${labelValue}`;
+		return `${labelValue}<input ${this.renderAttributes(options)}/><datalist id="${options.list}">${datalist.map(item => `<option value="${item}"></option>`)}</datalist>`;
+	}
+
+	eventsToBind(element, controller) {
+		return {
+			input: () => {
+				this.setControllerValue(controller, element.value);
+			},
+			blur: () => {
+				if (!this.getControllerTouched(controller)) {
+					this.setControllerTouched(controller, true);
+				}
+			}
+		}
+	}
+}
+
+export class CheckBox extends FormFieldComponent
+{
+	constructor(controllers) {
+		super({}, controllers);
+	}
+
+	onSetValue(controller, value) {
+		const elements = this.getControllerElements(controller);
+		elements.forEach(element => {
+			element.checked = value;
+		});
+	}
+
+	getFieldSelector() {
+		return "input[type=checkbox]";
+	}
+
+	renderField(controller) {
+		const options = {
+			type: "checkbox"
+		};
+
+		const input = this.children.querySelector("input[type=checkbox]");
+		const label = this.children.querySelector("label");
+		let labelAttributes = {};
+		let labelValue = "";
+
+		if (input) {
+			const attr = getAllAttributesFrom(input);
+
+			for (let key in attr) {
+				options[key] = attr[key];
+			}
+		}
+		if (label) {
+			const attr = getAllAttributesFrom(label);
+			labelAttributes = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
+			labelValue = label.innerHTML;
+		}
+		return `${labelValue?`<label ${labelAttributes}>`:""}<input ${this.renderAttributes(options)}/>${labelValue?`${labelValue}</label>`:""}`;
+	}
+
+	eventsToBind(element, controller) {
+		return {
+			input: () => {
+				this.setControllerValue(controller, element.checked);
+			},
+			blur: () => {
+				if (!this.getControllerTouched(controller)) {
+					this.setControllerTouched(controller, true);
+				}
+			}
+		}
 	}
 }
 
 export class SelectField extends FormFieldComponent
 {
-	constructor(options) {
-		super({
-			default: []
+	constructor(controllers) {
+		super({}, controllers);
+	}
+
+	setController(name, values) {
+		super.setController(name, values);
+		this.__controllers[name].options = values.options || [];
+	}
+
+	getControllerOptions(controller) {
+		return this.__controllers[controller].options;
+	}
+	setControllerOptions(controller, options) {
+		this.__controllers[controller].options = options;
+		this.reload();
+	}
+
+	onSetValue(controller, value) {
+		const elements = this.getControllerElements(controller);
+		elements.forEach(element => {
+			element.value = value;
 		});
-		this.onSelect = new EventEmitter("select", this);
-
-		if (options !== undefined) {
-			this.setSelectControllers(options);
-		}
 	}
 
-	getOptions(property) {
-		if (property === undefined || property === null) {
-			property = "default";
-		}
-		return this[property];
+	getFieldSelector() {
+		return "select";
 	}
 
-	addOption(control, text, value) {
-		if (text === undefined || text === null) {
-			text = control;
-			control = "default";
-		}
-		if (value === undefined) {
-			value = text;
-		}
-		const options = this[control] || [];
-		options.push({ value, text });
-		this.renderSelect(control, options);
-	}
+	renderField(controller) {
+		const selectAttr = {};
+		const optionAttr = {};
 
-	setOptions(control, options) {
-		this[control] = options;
-		this.renderSelect(control, options);
-	}
-
-	renderSelect(control, options) {
-		const items = document.querySelectorAll(`${this.getSelector()}[controller=${control}] select`);
-
-		for (const item of items) {
-			item.innerHTML = options.map(option => `<option value="${option.value}"${option.selected?" selected":""}>${option.text}</option>`).join('');
-		}
-	}
-
-	setSelectControllers(controls) {
-		const options = {};
-		const controllers = {};
-		Object.keys(controls).forEach(key => {
-			options[key] = controls[key].options;
-			controllers[key] = {
-				get: () => controls[key].get ? controls[key].get() : "",
-				set: value => controls[key].set ? controls[key].set(value) : undefined
-			}
-		});
-		this.definePropertiesObject(options);
-		this.setControllers(controllers);
-	}
-
-	onCreate() {
-		const handler = this.getFunctionAttribute("select", "event");
-		this.onSelect.then(handler);
-	}
-
-	setCurrentValue(value, control) {
-		const options = this[control] || [];
-		const option = options.find(o => o.value === value);
-
-		options.forEach(o => o.selected = false);
-		if (option) {
-			option.selected = true;
-		}
-		this.renderSelect(control, options);
-	}
-
-	__select(event, control) {
-		this.setControllerValue(control, event.target.value);
-		const value = this.getController(control);
-		this.setCurrentValue(value, control);
-		this.onSelect.emit(value);
-	}
-
-	selectAttributes(options, name) {
-		const attributes = [];
-
-		for (const key in options) {
-			attributes.push({
-				name: key,
-				value: options[key]
-			});
-		}
-		attributes.push({
-			name: "onchange",
-			value: `this.component.__select(event,'${name}')`
-		});
-		return this.__renderAttributes(attributes);
-	}
-
-	afterReload(items) {
-		for (const item of items) {
-			const control = item.getAttribute("controller");
-			const options = this[control] || [];
-			this.renderSelect(control, options);
-		}
-	}
-
-	render() {
-		const control = this.getAttribute("controller");
 		const select = this.children.querySelector("select");
 		const label = this.children.querySelector("label");
-		const attributes = {};
+		const option = this.children.querySelector("option");
+		const items = this.getControllerOptions(controller);
+		let labelAttributes = {};
 		let labelValue = "";
 
 		if (select) {
 			const attr = getAllAttributesFrom(select);
 
 			for (let key in attr) {
-				attributes[key] = attr[key];
+				selectAttr[key] = attr[key];
 			}
+		}
+		if (option) {
+			const attr = getAllAttributesFrom(option);
+
+			for (let key in attr) {
+				optionAttr[key] = attr[key];
+			}
+			if (optionAttr.value) delete optionAttr.value;
 		}
 		if (label) {
 			const attr = getAllAttributesFrom(label);
-			let attributes = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
-			labelValue = `<label ${attributes}>${label.innerHTML}</label>`;
+			labelAttributes = Object.keys(attr).map(key => `${key}="${attr[key]}"`).join(' ');
+			labelValue = label.innerHTML;
 		}
-		this.setCurrentValue(this.getController(control), control);
-		return `${labelValue}<select ${this.selectAttributes(attributes,control)}></select>`
+		return `${labelValue?`<label ${labelAttributes}>${labelValue}</label>`:""}<select ${this.renderAttributes(selectAttr)}>${items.map(option => `<option ${this.renderAttributes(optionAttr)} value="${option.value}">${option.label}</option>`)}</select>`;
+	}
+
+	eventsToBind(element, controller) {
+		return {
+			input: () => {
+				this.setControllerValue(controller, element.value);
+			},
+			blur: () => {
+				if (!this.getControllerTouched(controller)) {
+					this.setControllerTouched(controller, true);
+				}
+			}
+		}
 	}
 }
