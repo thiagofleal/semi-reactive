@@ -1,4 +1,4 @@
-import { Component } from "../core/components.js";
+import { Component } from "../../core.js";
 
 export class DialogComponent extends Component {
   constructor(options) {

@@ -1,55 +1,5 @@
-export class Subscription {
-	constructor() {
-		this.__subscriptions = [];
-	}
-
-	add(subscription) {
-		this.__subscriptions.push(subscription);
-	}
-
-	unsubscribe() {
-		this.__subscriptions.forEach(subscription => subscription.unsubscribe());
-	}
-}
-
-export class Observer {
-	constructor(next, error, complete) {
-		this.__subscribed = true;
-		this.onNext = next ? next : () => { };
-		this.onError = error ? error : () => { };
-		this.onComplete = complete ? complete : () => { };
-		this.setUnsubscribe();
-	}
-
-	setUnsubscribe(unsubscribe) {
-		this.__unsubscribe = unsubscribe ? unsubscribe : () => { };
-	}
-
-	next(value) {
-		if (this.__subscribed) {
-			this.onNext(value);
-		}
-	}
-
-	error(err) {
-		if (this.__subscribed) {
-			this.onError(err);
-			this.unsubscribe();
-		}
-	}
-
-	complete() {
-		if (this.__subscribed) {
-			this.onComplete();
-			this.unsubscribe();
-		}
-	}
-
-	unsubscribe() {
-		this.__subscribed = false;
-		this.__unsubscribe();
-	}
-}
+import { Subscription } from "./subscription.js";
+import { Observer } from "./observer.js";
 
 export class Observable {
 	constructor(func) {
@@ -221,30 +171,5 @@ export class Observable {
 			}
 			return () => source.close();
 		});
-	}
-}
-
-export class Subject extends Observable {
-	constructor() {
-		super(observer => {
-			this.observers.push(observer);
-			return () => {
-				const index = this.observers.indexOf(observer);
-				this.observers.splice(index, 1);
-			};
-		});
-		this.observers = [];
-	}
-
-	next(value) {
-		this.observers.forEach(observer => observer.next(value));
-	}
-
-	error(err) {
-		this.observers.forEach(observer => observer.error(err));
-	}
-
-	complete() {
-		this.observers.forEach(observer => observer.complete());
 	}
 }

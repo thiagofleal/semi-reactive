@@ -1,20 +1,9 @@
-import { Property, PropertySet } from "./properties.js";
+import { Property } from "./property.js";
+import { PropertySet } from "./property-set.js";
 import { Style } from "./style.js";
-import { EventEmitter } from "./events.js";
+import { EventEmitter } from "./event-emitter.js";
 
-function createElement(str) {
-	const elem = document.createElement('div');
-	elem.innerHTML = str;
-	return elem;
-}
-
-export function getAllAttributesFrom(element) {
-	const attributes = {};
-	Array.from(element.attributes).forEach(attr => {
-		attributes[attr.nodeName] = attr.nodeValue;
-	});
-	return attributes;
-}
+import { createElement, getAllAttributesFrom, randomString } from "../utils/functions.js";
 
 export class Component extends EventTarget
 {
@@ -28,21 +17,10 @@ export class Component extends EventTarget
 		this.__selector = null;
 		this.__properties = {};
 		this.__parent = undefined;
-		this.__id = this.createId(5);
+		this.__id = `${ this.constructor.name }_${ randomString(5) }`;
 		this.__childNodes = {};
 		this.__styles = [];
-		delete this.createId;
 		this.definePropertiesObject(props || {});
-	}
-
-	createId(length) {
-		const chars = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789";
-		let ret = `${this.constructor.name}_`;
-
-		for (let i = 0; i < length; i++) {
-			ret += chars.charAt(Math.ceil(Math.random() * chars.length));
-		}
-		return ret;
 	}
 
 	get element() {
@@ -291,16 +269,6 @@ export class Component extends EventTarget
 		}
 	}
 
-	pageTitle(title) {
-		let element = document.querySelector('head title');
-
-		if (!element) {
-			element = document.createElement('title');
-			document.head.append(element);
-		}
-		element.innerHTML = title;
-	}
-
 	getAttribute(attr) {
 		return this.element.getAttribute(attr);
 	}
@@ -341,78 +309,5 @@ export class Component extends EventTarget
 			data = { detail: data };
 		}
 		this.dispatchEvent(new CustomEvent(event, data));
-	}
-}
-
-export class Switch extends Component
-{
-	constructor(props) {
-		super(props);
-		this.__components = {};
-		this.__selectedKey = null;
-		this.__selected = null;
-	}
-
-	get selectedKey() {
-		return this.__selectedKey;
-	}
-
-	show(selector) {
-		super.show(selector);
-
-		if (this.__selectedKey) {
-			this.select(this.__selectedKey);
-		}
-	}
-
-	getAllComponents() {
-		const ret = [];
-
-		for (const key in this.__components) {
-			ret.push(this.__components[key]);
-		}
-		return ret;
-	}
-
-	setComponent(key, component) {
-		this.__components[key] = component;
-	}
-
-	getComponent(key) {
-		if (key in this.__components) {
-			return this.__components[key];
-		}
-		return null;
-	}
-
-	getSelected() {
-		if (this.__selectedKey) {
-			return this.__components[this.__selectedKey];
-		}
-		return null;
-	}
-
-	select(key) {
-		if (this.__selected && this.__selected.onUnselected) {
-			this.__selected.onUnselected();
-		}
-		if (key in this.__components) {
-			this.__selectedKey = key;
-			this.__selected = this.__components[key];
-			this.__components[key].show(this.__selector);
-			this.__components[key].__element = this.getElement();
-
-			if (this.__components[key].onSelected) {
-				this.__components[key].onSelected();
-			}
-		}
-	}
-
-	reload() {
-		const selected = this.getSelected();
-
-		if (selected) {
-			selected.reload();
-		}
 	}
 }

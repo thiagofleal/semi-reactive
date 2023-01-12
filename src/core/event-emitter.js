@@ -1,5 +1,5 @@
-import { Component } from "./components.js";
-import { Observable } from "./rx.js";
+import { Component } from "./component.js";
+import { Observable } from "../../rx.js";
 
 export class EventEmitter extends EventTarget
 {
