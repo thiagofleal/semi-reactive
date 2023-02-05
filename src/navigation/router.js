@@ -2,10 +2,11 @@ import { Switch } from "../../core.js";
 
 export class Router extends Switch
 {
+	#routes = [];
+	#urlPath = null;
+
 	constructor(props) {
 		super(props);
-		this.#routes = [];
-		this.#urlPath = null;
 	}
 
 	getRoutes() {

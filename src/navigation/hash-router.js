@@ -2,9 +2,10 @@ import { Router } from "./router.js";
 
 export class HashRouter extends Router
 {
+	#init = false;
+
 	constructor(props) {
 		super(props);
-		this.#init = false;
 	}
 
 	init() {
