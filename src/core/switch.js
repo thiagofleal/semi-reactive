@@ -14,14 +14,6 @@ export class Switch extends Component
 		return this.#selectedKey;
 	}
 
-	show(selector) {
-		super.show(selector);
-
-		if (this.#selectedKey) {
-			this.select(this.#selectedKey);
-		}
-	}
-
 	getAllComponents() {
 		const ret = [];
 
@@ -33,6 +25,8 @@ export class Switch extends Component
 
 	setComponent(key, component) {
 		this.#components[key] = component;
+		this.appendChild(component, "switch-content");
+		component.disable();
 	}
 
 	getComponent(key) {
@@ -56,8 +50,7 @@ export class Switch extends Component
 		if (key in this.#components) {
 			this.#selectedKey = key;
 			this.#selected = this.#components[key];
-			this.#components[key].show(this.getSelector());
-			this.#components[key].__setElement(this.getElement());
+			this.#components[key].enable();
 
 			if (this.#components[key].onSelected) {
 				this.#components[key].onSelected();
@@ -65,11 +58,11 @@ export class Switch extends Component
 		}
 	}
 
-	reload() {
-		const selected = this.getSelected();
-
-		if (selected) {
-			selected.reload();
-		}
+	render() {
+		const allAttributes = this.getAllAttributes();
+		const attributes = Object.keys(allAttributes)
+			.map(key => `${ key }="${ allAttributes[key] }"`)
+			.join(" ");
+		return `<switch-content ${ attributes }></switch-content>`
 	}
 }
