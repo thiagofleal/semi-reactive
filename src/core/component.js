@@ -18,6 +18,8 @@ export class Component extends EventTarget
 	#id = "";
 	#childNodes = {};
 	#calledBeforeReload = false;
+	#onFirstCallbacks = [];
+	#onCreateCallbacks = [];
 
 	constructor(props, enabled) {
 		super();
@@ -84,11 +86,43 @@ export class Component extends EventTarget
 		return document.querySelectorAll(`[component=${this.getId()}]>${query}`)
 	}
 
+	addOnFirstCallback(callback) {
+		if (typeof callback === "function") {
+			this.#onFirstCallbacks.push(callback);
+		}
+	}
+
+	addOnCreateCallback(callback) {
+		if (typeof callback === "function") {
+			this.#onCreateCallbacks.push(callback);
+		}
+	}
+
 	onFirst() {}
 	onCreate() {}
 
-	createEventEmitter(event) {
-		return new EventEmitter(event, this);
+	#atFirst(item) {
+		this.#onFirstCallbacks.forEach(callback => {
+			typeof callback === "function" ? callback() : undefined;
+		});
+		this.onFirst(item)
+	}
+
+	#atCreate(item) {
+		this.#onCreateCallbacks.forEach(callback => {
+			typeof callback === "function" ? callback() : undefined;
+		});
+		this.onCreate(item)
+	}
+
+	createEventEmitter(event, property) {
+		const emitter = new EventEmitter(event, this);
+		if (property) {
+			this.addOnCreateCallback(() => {
+				emitter.initFromProperty(property);
+			});
+		}
+		return emitter;
 	}
 
 	getElement() {
@@ -149,7 +183,7 @@ export class Component extends EventTarget
 				if (!item.__created) {
 					this.#element = item;
 					this.#dataset = item.dataset;
-					this.onCreate(item);
+					this.#atCreate(item);
 					item.__created = true;
 				}
 			}
@@ -157,7 +191,7 @@ export class Component extends EventTarget
 				for (let item of result) {
 					this.#element = item;
 					this.#dataset = item.dataset;
-					this.onFirst(item);
+					this.#atFirst(item);
 					this.#first = false;
 				}
 			}
