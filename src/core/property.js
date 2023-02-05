@@ -1,12 +1,14 @@
 import { Subject } from "../../rx.js";
 
 export class Property {
+	#value = undefined;
+
 	get value() {
-		return this.__value;
+		return this.#value;
 	}
 
 	set value(value) {
-		this.__value = value;
+		this.#value = value;
 		this.value$.next(value);
 	}
 
@@ -17,7 +19,7 @@ export class Property {
 	constructor(value, component) {
 		this.value$ = new Subject();
 		this.setComponent(component);
-		this.__value = value;
+		this.#value = value;
 		this.value$.subscribe(() => this.change());
 	}
 

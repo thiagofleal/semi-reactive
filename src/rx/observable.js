@@ -2,8 +2,10 @@ import { Subscription } from "./subscription.js";
 import { Observer } from "./observer.js";
 
 export class Observable {
+	#func = () => {};
+
 	constructor(func) {
-		this.__func = func;
+		this.#func = func;
 	}
 
 	subscribe(observer) {
@@ -26,7 +28,7 @@ export class Observable {
 		const observe = new Observer(next, error, complete);
 		const subscription = new Subscription();
 
-		const ret = this.__func(observe);
+		const ret = this.#func(observe);
 		subscription.add(observe);
 
 		if (typeof ret === "function") {

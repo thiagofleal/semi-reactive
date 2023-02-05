@@ -4,14 +4,15 @@ import { getAllAttributesFrom, getElementClasses } from "../utils/functions.js";
 
 export class FormFieldComponent extends Component
 {
+	#controllers = {};
+
 	constructor(props, controllers) {
 		super(props);
-		this.__controllers = {};
 		this.setControllers(controllers || {});
 	}
 
 	setController(name, values) {
-		this.__controllers[name] = {
+		this.#controllers[name] = {
 			get: values.get || (() => ""),
 			set: values.set || (() => void 0),
 			errorClassName: values.errorClassName || "",
@@ -23,9 +24,24 @@ export class FormFieldComponent extends Component
 		};
 	}
 
+	getControllerProperty(controllerName, propertyName) {
+		const controller = this.#controllers[controllerName];
+
+		if (controller) {
+			return controller[propertyName];
+		}
+	}
+	setControllerProperty(controllerName, propertyName, value) {
+		const controller = this.#controllers[controllerName];
+
+		if (controller) {
+			controller[propertyName] = value;
+		}
+	}
+
 	setControllers(controllers, append) {
 		if (!append) {
-			this.__controllers = {};
+			this.#controllers = {};
 		}
 		for (const key in controllers) {
 			this.setController(key, controllers[key]);
@@ -33,28 +49,28 @@ export class FormFieldComponent extends Component
 	}
 
 	getControllerValue(name) {
-		return this.__controllers[name].get();
+		return this.#controllers[name].get();
 	}
 	setControllerValue(name, value) {
-		this.__controllers[name].set(value);
+		this.#controllers[name].set(value);
 		this.onSetValue(name, this.getControllerValue(name));
 		this.validate(name);
 	}
 	setValueAll(value) {
-		for (const name in this.__controllers) {
+		for (const name in this.#controllers) {
 			this.setControllerValue(name, value);
 		}
 	}
 
 	getControllerTouched(name) {
-		return this.__controllers[name].touched;
+		return this.#controllers[name].touched;
 	}
 	setControllerTouched(name, value) {
-		this.__controllers[name].touched = value;
+		this.#controllers[name].touched = value;
 		this.validate(name);
 	}
 	setAllTouched(value) {
-		for (const name in this.__controllers) {
+		for (const name in this.#controllers) {
 			this.setControllerTouched(name, value);
 		}
 	}
@@ -72,7 +88,7 @@ export class FormFieldComponent extends Component
 	}
 
 	validate(controllerName) {
-		const controller = this.__controllers[controllerName];
+		const controller = this.#controllers[controllerName];
 
 		if (controller.touched) {
 			const value = this.getControllerValue(controllerName);

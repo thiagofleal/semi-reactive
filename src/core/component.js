@@ -7,19 +7,22 @@ import { createElement, getAllAttributesFrom, randomString } from "../utils/func
 
 export class Component extends EventTarget
 {
+	#children = [];
+	#enabled = true;
+	#dataset = {};
+	#first = true;
+	#element = null;
+	#selector = null;
+	#properties = {};
+	#parent = undefined;
+	#id = "";
+	#childNodes = {};
+	#called_before_reload = false;
+
 	constructor(props, enabled) {
 		super();
-		this.__children = [];
-		this.__enabled = (enabled === null || enabled === undefined || enabled === true);
-		this.__element = null;
-		this.__dataset = {};
-		this.__first = true;
-		this.__selector = null;
-		this.__properties = {};
-		this.__parent = undefined;
-		this.__id = `${ this.constructor.name }_${ randomString(5) }`;
-		this.__childNodes = {};
-		this.__styles = [];
+		this.#enabled = (enabled === null || enabled === undefined || enabled === true);
+		this.#id = `${ this.constructor.name }_${ randomString(5) }`;
 		this.definePropertiesObject(props || {});
 	}
 
@@ -28,11 +31,11 @@ export class Component extends EventTarget
 	}
 
 	get dataset() {
-		return this.__dataset;
+		return this.#dataset;
 	}
 
 	get children() {
-		return this.__childNodes[this.element];
+		return this.#childNodes[this.element];
 	}
 
 	render() {
@@ -60,11 +63,11 @@ export class Component extends EventTarget
 	}
 
 	getSelector() {
-		return this.__selector;
+		return this.#selector;
 	}
 
 	getId() {
-		return this.__id;
+		return this.#id;
 	}
 
 	querySelector(query) {
@@ -89,7 +92,10 @@ export class Component extends EventTarget
 	}
 
 	getElement() {
-		return this.__element;
+		return this.#element;
+	}
+	__setElement(element) {
+		this.#element = element;
 	}
 
 	closestOf(element) {
@@ -97,7 +103,7 @@ export class Component extends EventTarget
 	}
 
 	show(selector) {
-		this.__selector = selector;
+		this.#selector = selector;
 		this.reload();
 		this.onShow ? this.onShow() : undefined;
 	}
@@ -107,23 +113,23 @@ export class Component extends EventTarget
 	}
 
 	callBeforeReload() {
-		if (!this.__called_before_reload) {
+		if (!this.#called_before_reload) {
 			this.beforeReload ? this.beforeReload() : undefined;
-			this.__called_before_reload = true;
-			this.__children.forEach(child => {
+			this.#called_before_reload = true;
+			this.#children.forEach(child => {
 				child.callBeforeReload();
 			});
 		}
 	}
 
 	loadChildNode(item) {
-		this.__childNodes[item] = createElement(item.innerHTML);
+		this.#childNodes[item] = createElement(item.innerHTML);
 	}
 
 	reload() {
-		if (this.__enabled) {
+		if (this.#enabled) {
 			this.callBeforeReload();
-			this.__called_before_reload = false;
+			this.#called_before_reload = false;
 
 			const result = this.getAllItems();
 			const attrComponent = elem => {
@@ -133,7 +139,7 @@ export class Component extends EventTarget
 					if (!child.component) {
 						Object.defineProperty(child, "component", {
 							get: () => {
-								this.__element = child._element;
+								this.#element = child._element;
 								return child._component;
 							}
 						});
@@ -146,46 +152,46 @@ export class Component extends EventTarget
 			};
 			
 			for (let item of result) {
-				this.__element = item;
-				this.__dataset = item.dataset;
+				this.#element = item;
+				this.#dataset = item.dataset;
 				if (!item.__created) {
 					this.loadChildNode(item);
 				}
 				item.innerHTML = this.render(item).trim();
 				attrComponent(item);
-				this.onReload ? this.onReload(item, this.__first) : undefined;
+				this.onReload ? this.onReload(item, this.#first) : undefined;
 			}
-			this.__loadChildren();
+			this.#loadChildren();
 
 			for (let item of result) {
 				if (!item.__created) {
-					this.__element = item;
-					this.__dataset = item.dataset;
+					this.#element = item;
+					this.#dataset = item.dataset;
 					this.onCreate(item);
 					item.__created = true;
 				}
 			}
-			if (this.__first) {
+			if (this.#first) {
 				for (let item of result) {
-					this.__element = item;
-					this.__dataset = item.dataset;
+					this.#element = item;
+					this.#dataset = item.dataset;
 					this.onFirst(item);
-					this.__first = false;
+					this.#first = false;
 				}
 			}
 			this.afterReload ? this.afterReload(result) : undefined;
 		}
-		return this.__enabled;
+		return this.#enabled;
 	}
 
 	enable() {
-		this.__enabled = true;
+		this.#enabled = true;
 		this.reload();
 		this.onEnable ? this.onEnable() : undefined;
 	}
 
 	disable() {
-		this.__enabled = false;
+		this.#enabled = false;
 		for (let el of this.getAllItems()) {
 			el.innerHTML = '';
 		}
@@ -193,11 +199,11 @@ export class Component extends EventTarget
 	}
 
 	getParent() {
-		return this.__parent;
+		return this.#parent;
 	}
 
 	getProperty(name) {
-		return this.__properties[name];
+		return this.#properties[name];
 	}
 
 	defineProperty(name, initial) {
@@ -207,7 +213,7 @@ export class Component extends EventTarget
 			get: () => prop.value,
 			set: value => prop.value = value
 		});
-		return this.__properties[name] = prop;
+		return this.#properties[name] = prop;
 	}
 
 	definePropertiesObject(obj) {
@@ -254,8 +260,8 @@ export class Component extends EventTarget
 		if (eventHandlers === undefined || eventHandlers === null) {
 			eventHandlers = [];
 		}
-		this.__children.push(child);
-		child.__parent = this;
+		this.#children.push(child);
+		child.#parent = this;
 		child.show(`${selector}[component=${this.getId()}]`);
 
 		for (let handler of eventHandlers) {
@@ -263,8 +269,8 @@ export class Component extends EventTarget
 		}
 	}
 
-	__loadChildren() {
-		for (let child of this.__children) {
+	#loadChildren() {
+		for (let child of this.#children) {
 			child.reload();
 		}
 	}

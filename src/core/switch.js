@@ -2,64 +2,65 @@ import { Component } from "./component.js";
 
 export class Switch extends Component
 {
+	#components = {};
+	#selectedKey = null;
+	#selected = null;
+
 	constructor(props) {
 		super(props);
-		this.__components = {};
-		this.__selectedKey = null;
-		this.__selected = null;
 	}
 
 	get selectedKey() {
-		return this.__selectedKey;
+		return this.#selectedKey;
 	}
 
 	show(selector) {
 		super.show(selector);
 
-		if (this.__selectedKey) {
-			this.select(this.__selectedKey);
+		if (this.#selectedKey) {
+			this.select(this.#selectedKey);
 		}
 	}
 
 	getAllComponents() {
 		const ret = [];
 
-		for (const key in this.__components) {
-			ret.push(this.__components[key]);
+		for (const key in this.#components) {
+			ret.push(this.#components[key]);
 		}
 		return ret;
 	}
 
 	setComponent(key, component) {
-		this.__components[key] = component;
+		this.#components[key] = component;
 	}
 
 	getComponent(key) {
-		if (key in this.__components) {
-			return this.__components[key];
+		if (key in this.#components) {
+			return this.#components[key];
 		}
 		return null;
 	}
 
 	getSelected() {
-		if (this.__selectedKey) {
-			return this.__components[this.__selectedKey];
+		if (this.#selectedKey) {
+			return this.#components[this.#selectedKey];
 		}
 		return null;
 	}
 
 	select(key) {
-		if (this.__selected && this.__selected.onUnselected) {
-			this.__selected.onUnselected();
+		if (this.#selected && this.#selected.onUnselected) {
+			this.#selected.onUnselected();
 		}
-		if (key in this.__components) {
-			this.__selectedKey = key;
-			this.__selected = this.__components[key];
-			this.__components[key].show(this.__selector);
-			this.__components[key].__element = this.getElement();
+		if (key in this.#components) {
+			this.#selectedKey = key;
+			this.#selected = this.#components[key];
+			this.#components[key].show(this.getSelector());
+			this.#components[key].__setElement(this.getElement());
 
-			if (this.__components[key].onSelected) {
-				this.__components[key].onSelected();
+			if (this.#components[key].onSelected) {
+				this.#components[key].onSelected();
 			}
 		}
 	}

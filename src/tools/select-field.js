@@ -9,14 +9,14 @@ export class SelectField extends FormFieldComponent
 
 	setController(name, values) {
 		super.setController(name, values);
-		this.__controllers[name].options = values.options || [];
+		this.setControllerProperty(name, "options", values.options || []);
 	}
 
 	getControllerOptions(controller) {
-		return this.__controllers[controller].options;
+		return this.getControllerProperty(controller, "options");
 	}
 	setControllerOptions(controller, options) {
-		this.__controllers[controller].options = options;
+		this.setControllerProperty(controller, "options", options);
 		this.reload();
 	}
 

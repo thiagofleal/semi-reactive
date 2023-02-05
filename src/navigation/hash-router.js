@@ -4,18 +4,18 @@ export class HashRouter extends Router
 {
 	constructor(props) {
 		super(props);
-		this.__init = false;
+		this.#init = false;
 	}
 
 	init() {
 		window.addEventListener("hashchange", () => this.loadPath());
-		this.__init = true;
+		this.#init = true;
 	}
 
 	setRoutes(routes) {
 		super.setRoutes(routes);
 
-		if (!this.__init) {
+		if (!this.#init) {
 			this.init();
 		}
 	}

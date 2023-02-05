@@ -4,16 +4,16 @@ export class Router extends Switch
 {
 	constructor(props) {
 		super(props);
-		this.__routes = [];
-		this.__urlPath = null;
+		this.#routes = [];
+		this.#urlPath = null;
 	}
 
 	getRoutes() {
-		return this.__routes;
+		return this.#routes;
 	}
 
 	setRoutes(routes) {
-		this.__routes = routes;
+		this.#routes = routes;
 
 		for (const item of routes) {
 			this.setComponent(item.path, item.component);
@@ -21,15 +21,15 @@ export class Router extends Switch
 	}
 
 	getUrlPath() {
-		if (this.__urlPath !== null) {
-			return this.__urlPath;
+		if (this.#urlPath !== null) {
+			return this.#urlPath;
 		}
 
 		return false;
 	}
 
 	setUrlPath(path) {
-		this.__urlPath = path;
+		this.#urlPath = path;
 	}
 
 	selectComponent(key, sub) {
@@ -52,12 +52,12 @@ export class Router extends Switch
 	loadPath() {
 		const path = this.getUrlPath();
 		const currentPath = path.shift();
-		const route = this.__routes.find(r => r.path === currentPath);
+		const route = this.#routes.find(r => r.path === currentPath);
 
 		if (route) {
 			this.selectComponent(route.path, path);
 		} else {
-			const def = this.__routes.find(r => r.path === "*");
+			const def = this.#routes.find(r => r.path === "*");
 
 			if (def) {
 				this.selectComponent(def.path, path);

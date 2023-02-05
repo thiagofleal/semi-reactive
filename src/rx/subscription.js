@@ -1,13 +1,11 @@
 export class Subscription {
-	constructor() {
-		this.__subscriptions = [];
-	}
+	#subscriptions = [];
 
 	add(subscription) {
-		this.__subscriptions.push(subscription);
+		this.#subscriptions.push(subscription);
 	}
 
 	unsubscribe() {
-		this.__subscriptions.forEach(subscription => subscription.unsubscribe());
+		this.#subscriptions.forEach(subscription => subscription.unsubscribe());
 	}
 }

@@ -9,14 +9,14 @@ export class InputDatalistField extends FormFieldComponent
 
 	setController(name, values) {
 		super.setController(name, values);
-		this.__controllers[name].datalist = values.datalist || [];
+		this.setControllerProperty(name, "datalist", values.datalist || []);
 	}
 
 	getControllerDatalist(controller) {
-		return this.__controllers[controller].datalist;
+		return this.getControllerProperty(controller, "datalist");
 	}
 	setControllerDatalist(controller, datalist) {
-		this.__controllers[controller].datalist = datalist;
+		this.setControllerProperty(controller, "datalist", datalist);
 		const elements = this.getDatalistElements(controller);
 		elements.forEach(element => {
 			element.innerHTML = datalist.map(item => `<option value="${item}"></option>`)

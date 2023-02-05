@@ -1,6 +1,8 @@
 export class Observer {
+	#subscribed = true;
+	#unsubscribe = () => {};
+
 	constructor(next, error, complete) {
-		this.__subscribed = true;
 		this.onNext = next ? next : () => { };
 		this.onError = error ? error : () => { };
 		this.onComplete = complete ? complete : () => { };
@@ -8,31 +10,31 @@ export class Observer {
 	}
 
 	setUnsubscribe(unsubscribe) {
-		this.__unsubscribe = unsubscribe ? unsubscribe : () => { };
+		if (unsubscribe && typeof unsubscribe === "function") this.#unsubscribe = unsubscribe;
 	}
 
 	next(value) {
-		if (this.__subscribed) {
+		if (this.#subscribed) {
 			this.onNext(value);
 		}
 	}
 
 	error(err) {
-		if (this.__subscribed) {
+		if (this.#subscribed) {
 			this.onError(err);
 			this.unsubscribe();
 		}
 	}
 
 	complete() {
-		if (this.__subscribed) {
+		if (this.#subscribed) {
 			this.onComplete();
 			this.unsubscribe();
 		}
 	}
 
 	unsubscribe() {
-		this.__subscribed = false;
-		this.__unsubscribe();
+		this.#subscribed = false;
+		this.#unsubscribe();
 	}
 }
