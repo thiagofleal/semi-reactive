@@ -33,12 +33,6 @@ export class DialogComponent extends Component {
     this.onClose = callback;
   }
 
-  register(object) {
-    for (const key in object) {
-      this[key] = object[key];
-    }
-  }
-
   async open() {
     this.__active = true;
     this.onOpen();
@@ -83,12 +77,6 @@ export class DialogContainer extends Component {
 
   setOnClose(callback) {
     this.dialog.setOnClose(callback);
-  }
-
-  register(fields) {
-    for (const key in fields) {
-      this[key] = fields[key];
-    }
   }
 
   getContent() {

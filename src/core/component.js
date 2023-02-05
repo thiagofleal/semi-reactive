@@ -3,7 +3,7 @@ import { PropertySet } from "./property-set.js";
 import { Style } from "./style.js";
 import { EventEmitter } from "./event-emitter.js";
 
-import { createElement, getAllAttributesFrom, randomString } from "../utils/functions.js";
+import { attrComponent, createElement, getAllAttributesFrom, randomString } from "../utils/functions.js";
 
 export class Component extends EventTarget
 {
@@ -17,7 +17,7 @@ export class Component extends EventTarget
 	#parent = undefined;
 	#id = "";
 	#childNodes = {};
-	#called_before_reload = false;
+	#calledBeforeReload = false;
 
 	constructor(props, enabled) {
 		super();
@@ -113,9 +113,9 @@ export class Component extends EventTarget
 	}
 
 	callBeforeReload() {
-		if (!this.#called_before_reload) {
+		if (!this.#calledBeforeReload) {
 			this.beforeReload ? this.beforeReload() : undefined;
-			this.#called_before_reload = true;
+			this.#calledBeforeReload = true;
 			this.#children.forEach(child => {
 				child.callBeforeReload();
 			});
@@ -129,27 +129,9 @@ export class Component extends EventTarget
 	reload() {
 		if (this.#enabled) {
 			this.callBeforeReload();
-			this.#called_before_reload = false;
+			this.#calledBeforeReload = false;
 
 			const result = this.getAllItems();
-			const attrComponent = elem => {
-				for (let child of elem.childNodes) {
-					child._component = this;
-					child._element = elem.closest(this.getSelector());
-					if (!child.component) {
-						Object.defineProperty(child, "component", {
-							get: () => {
-								this.#element = child._element;
-								return child._component;
-							}
-						});
-					}
-					if (child.setAttribute && typeof child.setAttribute === "function") {
-						child.setAttribute("component", this.getId());
-					}
-					attrComponent(child);
-				}
-			};
 			
 			for (let item of result) {
 				this.#element = item;
@@ -158,7 +140,7 @@ export class Component extends EventTarget
 					this.loadChildNode(item);
 				}
 				item.innerHTML = this.render(item).trim();
-				attrComponent(item);
+				attrComponent(this, item);
 				this.onReload ? this.onReload(item, this.#first) : undefined;
 			}
 			this.#loadChildren();
@@ -256,16 +238,31 @@ export class Component extends EventTarget
 		}
 	}
 
-	appendChild(child, selector, eventHandlers) {
-		if (eventHandlers === undefined || eventHandlers === null) {
-			eventHandlers = [];
+	appendChild(child, selector) {
+		if (child instanceof Component) {
+			this.#children.push(child);
+			child.#parent = this;
+			child.show(`${selector}[component=${this.getId()}]`);
 		}
-		this.#children.push(child);
-		child.#parent = this;
-		child.show(`${selector}[component=${this.getId()}]`);
+	}
 
-		for (let handler of eventHandlers) {
-			this.addEventListener(handler.on, handler.callback, handler.flag);
+	setChilds(childs, reset) {
+		if (Array.isArray(childs)) {
+			const fields = {};
+			childs.forEach(item => {
+				if (item.selector && item.component) {
+					fields[item.selector] = item.component;
+				}
+			});
+			childs = fields;
+		}
+		if (typeof childs === "object") {
+			if (reset !== false) {
+				this.#children = [];
+			}
+			for (const key in childs) {
+				this.appendChild(childs[key], key);
+			}
 		}
 	}
 
@@ -315,5 +312,20 @@ export class Component extends EventTarget
 			data = { detail: data };
 		}
 		this.dispatchEvent(new CustomEvent(event, data));
+	}
+
+  set(fields) {
+    for (const key in fields) {
+      this[key] = fields[key];
+    }
+  }
+
+	import(...keys) {
+		const fields = {};
+
+		for (const key of keys) {
+			fields[key] = this.getParent()[key];
+		}
+		this.set(fields);
 	}
 }

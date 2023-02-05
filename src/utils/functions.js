@@ -34,3 +34,22 @@ export function getElementClasses(element, ignore) {
 export function sleep(time) {
 	return new Promise(r => setTimeout(r, time));
 }
+
+export function attrComponent(component, element) {
+	for (let child of element.childNodes) {
+		child._component = component;
+		child._element = element.closest(component.getSelector());
+		if (!child.component) {
+			Object.defineProperty(child, "component", {
+				get: () => {
+					component.__setElement(child._element);
+					return child._component;
+				}
+			});
+		}
+		if (child.setAttribute && typeof child.setAttribute === "function") {
+			child.setAttribute("component", component.getId());
+		}
+		attrComponent(component, child);
+	}
+}
