@@ -3,7 +3,7 @@ import { PropertySet } from "./property-set.js";
 import { Style } from "./style.js";
 import { EventEmitter } from "./event-emitter.js";
 
-import { attrComponent, createElement, getAllAttributesFrom, randomString } from "../utils/functions.js";
+import { attrComponent, parseHTML, getAllAttributesFrom, randomString, diff } from "../utils/functions.js";
 
 export class Component extends EventTarget
 {
@@ -157,7 +157,7 @@ export class Component extends EventTarget
 	}
 
 	loadChildNode(item) {
-		this.#childNodes[item] = createElement(item.innerHTML);
+		this.#childNodes[item] = parseHTML(item.innerHTML);
 	}
 
 	reload() {
@@ -173,7 +173,8 @@ export class Component extends EventTarget
 				if (!item.__created) {
 					this.loadChildNode(item);
 				}
-				item.innerHTML = this.render(item).trim();
+				const vDom = parseHTML(this.render(item));
+				diff(vDom, item);
 				attrComponent(this, item);
 				this.onReload ? this.onReload(item, this.#first) : undefined;
 			}
