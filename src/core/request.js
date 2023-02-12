@@ -1,4 +1,4 @@
-import { Service } from '../../semi-reactive/core/service.js';
+import { Service } from './service.js';
 
 export class Request extends Service
 {

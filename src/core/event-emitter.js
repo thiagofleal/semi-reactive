@@ -1,8 +1,10 @@
-import { Component } from "./components.js";
-import { Observable } from "./rx.js";
+import { Component } from "./component.js";
+import { Observable } from "../../rx.js";
 
 export class EventEmitter extends EventTarget
 {
+	#component = undefined;
+
 	constructor(eventName, component) {
 		super();
 		this.eventName = eventName;
@@ -10,12 +12,12 @@ export class EventEmitter extends EventTarget
 	}
 
 	get component() {
-		return this.__component;
+		return this.#component;
 	}
 
 	setComponent(component) {
 		if (component instanceof Component) {
-			this.__component = component;
+			this.#component = component;
 		}
 	}
 

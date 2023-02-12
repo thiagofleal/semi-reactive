@@ -1,4 +1,4 @@
-import { Component } from "../core/components.js";
+import { Component } from "../../core.js";
 
 export class DialogComponent extends Component {
   constructor(options) {
@@ -31,12 +31,6 @@ export class DialogComponent extends Component {
 
   setOnClose(callback) {
     this.onClose = callback;
-  }
-
-  register(object) {
-    for (const key in object) {
-      this[key] = object[key];
-    }
   }
 
   async open() {
@@ -83,12 +77,6 @@ export class DialogContainer extends Component {
 
   setOnClose(callback) {
     this.dialog.setOnClose(callback);
-  }
-
-  register(fields) {
-    for (const key in fields) {
-      this[key] = fields[key];
-    }
   }
 
   getContent() {

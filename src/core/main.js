@@ -1,4 +1,4 @@
-import { Injectable } from "./core/service.js";
+import { Injectable } from "./injectable.js";
 
 export class SemiReactive
 {

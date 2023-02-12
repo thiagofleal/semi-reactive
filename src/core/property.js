@@ -1,13 +1,14 @@
-import { Subject } from "./rx.js";
+import { Subject } from "../../rx.js";
 
-export class Property
-{
+export class Property {
+	#value = undefined;
+
 	get value() {
-		return this.__value;
+		return this.#value;
 	}
 
 	set value(value) {
-		this.__value = value;
+		this.#value = value;
 		this.value$.next(value);
 	}
 
@@ -18,7 +19,7 @@ export class Property
 	constructor(value, component) {
 		this.value$ = new Subject();
 		this.setComponent(component);
-		this.__value = value;
+		this.#value = value;
 		this.value$.subscribe(() => this.change());
 	}
 
@@ -26,7 +27,7 @@ export class Property
 		if (component !== null && component !== undefined) {
 			this.change = () => component.reload();
 		} else {
-			this.change = () => {};
+			this.change = () => { };
 		}
 	}
 
@@ -40,32 +41,4 @@ export class Property
 			};
 		}
 	}
-}
-
-export class PropertySet
-{
-    constructor() {
-        this.properties = {};
-    }
-
-    set(key, property) {
-        this.properties[key] = property;
-    }
-
-    get(key) {
-        return this.properties[key];
-    }
-
-    keys() {
-        return Object.keys(this.properties);
-    }
-
-    getAll() {
-        const ret = [];
-
-        for (let key of this.keys()) {
-            ret.push({ key, property: this.get(key) });
-        }
-        return ret;
-    }
 }
